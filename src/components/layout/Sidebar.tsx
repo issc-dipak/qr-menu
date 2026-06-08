@@ -75,7 +75,7 @@ export function Sidebar() {
                 style={{ width: plan.maxItems === Infinity ? '10%' : `${(itemCount/plan.maxItems)*100}%` }} />
             </div>
             {owner?.plan === 'free' && (
-              <Link href="/dashboard/billing" className="btn-primary w-full text-xs py-2 rounded-lg flex items-center justify-center no-underline">
+              <Link href="/dashboard/billing" onClick={() => setSidebarOpen(false)} className="btn-primary w-full text-xs py-2 rounded-lg flex items-center justify-center no-underline">
                 Upgrade ⚡
               </Link>
             )}

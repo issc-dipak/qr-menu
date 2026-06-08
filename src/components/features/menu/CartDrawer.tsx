@@ -21,7 +21,6 @@ export function CartDrawer({
   const { items, tableNumber, setTableNumber, updateQuantity, clearCart, getTotal } = useCartStore();
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0); // flat or percent reduction
-  const [isSending, setIsSending] = useState(false);
   const [selectedLang, setSelectedLang] = useState<'en' | 'hi'>('en');
 
   const t = {
@@ -69,44 +68,41 @@ export function CartDrawer({
 
   const finalTotal = Math.max(0, getTotal() - discount);
 
-  const handleWhatsAppOrder = () => {
+  const handleCashOrder = () => {
     if (items.length === 0) return;
     if (!tableNumber.trim()) {
       toast.error(selectedLang === 'en' ? 'Please enter a Table Number.' : 'कृपया टेबल नंबर दर्ज करें।');
       return;
     }
 
-    setIsSending(true);
+    const toastId = toast.loading(selectedLang === 'en' ? 'Placing cash order...' : 'नकद आर्डर भेजा जा रहा है...');
 
-    // ── FEATURE 2: FORMAT WHATSAPP MESSAGE (BEAUTIFIED) ──
-    let message = `🚀 *NEW ORDER RECEIVED!* 🚀\n`;
-    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
-    message += `📍 *Table Number:* ${tableNumber}\n`;
-    message += `📅 *Date:* ${new Date().toLocaleDateString('en-IN')}\n\n`;
-    message += `*📝 ORDER ITEMS:* \n`;
-    
-    items.forEach((item) => {
-      message += `• ${item.emoji} *${item.name}* x ${item.quantity}  →  *₹${item.price * item.quantity}*\n`;
-    });
+    setTimeout(() => {
+      // Create new order in localStorage for owner
+      const storedOrders = JSON.parse(localStorage.getItem('owner-orders-history') || '[]');
+      const newOrder = {
+        id: `ORD-${Math.floor(100 + Math.random() * 900)}`,
+        table: `Table ${tableNumber || 'N/A'}`,
+        items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+        total: finalTotal,
+        date: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        status: 'pending',
+        paymentStatus: 'unpaid'
+      };
+      localStorage.setItem('owner-orders-history', JSON.stringify([newOrder, ...storedOrders]));
 
-    message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
-    if (discount > 0) {
-      message += `🔹 *Subtotal:* ₹${getTotal()}\n`;
-      message += `🔹 *Coupon Discount:* -₹${discount}\n`;
-    }
-    message += `💰 *Final Total Amount:* *₹${finalTotal}*\n`;
-    message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
-    message += `Please confirm and prepare my order. Thank you! 🙏😊`;
-
-    const cleanPhone = ownerPhone.replace(/[^0-9]/g, '');
-    const phoneWithCountry = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
-    const encoded = encodeURIComponent(message);
-    const url = `https://wa.me/${phoneWithCountry}?text=${encoded}`;
-
-    // Open WhatsApp
-    window.open(url, '_blank');
-    setIsSending(false);
+      toast.success(
+        selectedLang === 'en' 
+          ? 'Order placed! Please pay cash at the counter. 🎉' 
+          : 'आर्डर दर्ज हो गया! कृपया काउंटर पर नकद भुगतान करें। 🎉', 
+        { id: toastId }
+      );
+      
+      clearCart();
+      onClose();
+    }, 1000);
   };
+
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
@@ -231,12 +227,11 @@ export function CartDrawer({
             {/* Checkout CTAs */}
             <div className="flex flex-col gap-2">
               <button
-                onClick={handleWhatsAppOrder}
-                disabled={isSending}
-                className="w-full btn-primary text-bg font-bold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 border-none shadow-glow cursor-pointer"
-                style={{ backgroundColor: themeColor }}
+                type="button"
+                onClick={handleCashOrder}
+                className="w-full bg-[#18181f] border border-border hover:border-accent text-[#f0f0f5] font-bold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                {isSending ? 'Formatting...' : t[selectedLang].checkout}
+                {selectedLang === 'en' ? '💵 Pay with Cash / Order at Counter' : '💵 नकद भुगतान / काउंटर पर आर्डर दें'}
               </button>
 
               <button

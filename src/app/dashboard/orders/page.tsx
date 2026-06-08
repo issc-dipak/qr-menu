@@ -58,6 +58,13 @@ export default function OrdersHistoryPage() {
     toast.success(`Order status updated to ${newStatus}! 🎉`);
   };
 
+  const togglePaymentStatus = (id: string) => {
+    const updated = orders.map(o => o.id === id ? { ...o, paymentStatus: 'paid' as const } : o);
+    setOrders(updated);
+    localStorage.setItem('owner-orders-history', JSON.stringify(updated));
+    toast.success('Payment status updated to Paid! 💰');
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-accent/10 text-accent border border-accent/20';
@@ -76,12 +83,12 @@ export default function OrdersHistoryPage() {
         </div>
         
         {/* Filter buttons */}
-        <div className="flex bg-surface border border-border rounded-xl p-1 gap-1">
+        <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto flex-nowrap scrollbar-none w-full md:w-auto">
           {(['all', 'pending', 'completed', 'cancelled'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border-none font-sans cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-shrink-0 ${
                 filter === f ? 'bg-accent text-bg' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
               }`}
             >
@@ -91,8 +98,72 @@ export default function OrdersHistoryPage() {
         </div>
       </div>
 
-      {/* Orders Table Layout */}
-      <div className="card overflow-x-auto">
+      {/* Mobile view (cards stacked) */}
+      <div className="md:hidden space-y-4">
+        {filteredOrders.length === 0 ? (
+          <div className="card text-center py-10 text-muted">No orders found.</div>
+        ) : (
+          filteredOrders.map((order) => (
+            <div key={order.id} className="card space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-[#f0f0f5]">{order.id}</span>
+                <span className="bg-accent-2/10 text-accent-2 px-2 py-0.5 rounded-full font-bold text-xs">{order.table}</span>
+              </div>
+              <div className="text-sm text-muted">{order.items}</div>
+              <div className="flex justify-between items-center text-xs">
+                <div>
+                  <div className="text-muted text-[10px]">{order.date}</div>
+                  <div className="font-bold text-accent mt-1 text-sm">₹{order.total}</div>
+                </div>
+                <div className="flex flex-col gap-1.5 items-end">
+                  <div className="flex gap-1.5">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${
+                      order.paymentStatus === 'paid'
+                        ? 'bg-accent/10 text-accent border border-accent/20'
+                        : 'bg-gold/10 text-gold border border-gold/20'
+                    }`}>
+                      {order.paymentStatus}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${getStatusBadgeClass(order.status)}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  {order.status === 'pending' && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => toggleStatus(order.id, 'completed')}
+                        className="bg-accent/10 hover:bg-accent border border-accent/35 text-accent hover:text-bg font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(order.id, 'cancelled')}
+                        className="bg-danger/10 hover:bg-danger border border-danger/35 text-danger hover:text-[#f0f0f5] font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                  {order.status !== 'pending' && (
+                    <span className="text-muted/40 italic text-[10px] mt-1">Archived</span>
+                  )}
+                  {order.paymentStatus === 'unpaid' && (
+                    <button
+                      onClick={() => togglePaymentStatus(order.id)}
+                      className="bg-gold/10 hover:bg-gold border border-gold/35 text-gold hover:text-bg font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer mt-1.5"
+                    >
+                      Mark Paid
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop view (table) */}
+      <div className="hidden md:block card overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
             <tr className="border-b border-border/50 text-[10px] uppercase font-bold tracking-wider text-muted">
@@ -154,6 +225,14 @@ export default function OrdersHistoryPage() {
                     )}
                     {order.status !== 'pending' && (
                       <span className="text-muted/40 italic">Archived</span>
+                    )}
+                    {order.paymentStatus === 'unpaid' && (
+                      <button
+                        onClick={() => togglePaymentStatus(order.id)}
+                        className="bg-gold/10 hover:bg-gold border border-gold/35 text-gold hover:text-bg font-bold px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
+                      >
+                        Mark Paid
+                      </button>
                     )}
                   </td>
                 </tr>

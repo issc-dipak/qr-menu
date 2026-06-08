@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
         <p className="text-muted text-sm max-w-md mb-8 leading-relaxed">
           Get detailed insights on how many customers scan your QR menu, daily trends, peak hours, and your most popular items!
         </p>
-        <div className="grid grid-cols-2 gap-4 w-full max-w-sm mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm mb-8">
           <div className="p-4 bg-surface-2 border border-border rounded-xl">
             <span className="text-xl">📊</span>
             <p className="text-xs font-bold mt-1 text-[#f0f0f5]">Scan Tracking</p>
@@ -36,7 +36,7 @@ export default function AnalyticsPage() {
             <p className="text-[10px] text-muted">Know when you are busy</p>
           </div>
         </div>
-        <Button onClick={() => window.location.href = '/dashboard/billing'}>
+        <Button onClick={() => window.location.href = '/dashboard/billing'} className="w-full sm:w-auto">
           Upgrade to Pro/Business ⚡
         </Button>
       </div>

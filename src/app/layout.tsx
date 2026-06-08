@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
 import '@/styles/globals.css';
-import { AiChatBot } from '@/components/features/ai/AiChatBot';
 
 export const metadata: Metadata = {
   title: 'QR-Menu — Digital Menu for Every Shop',
@@ -14,7 +13,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body>
         {children}
-        <AiChatBot />
         <Toaster
           position="bottom-right"
           toastOptions={{

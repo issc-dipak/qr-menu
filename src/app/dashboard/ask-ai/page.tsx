@@ -88,7 +88,7 @@ Is there a specific menu item description or marketing poster idea you would lik
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-210px)] md:h-[calc(100vh-190px)]">
       {/* Header */}
       <div className="mb-4">
         <h1 className="font-display font-black text-2xl">Ask AI</h1>

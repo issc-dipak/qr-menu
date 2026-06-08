@@ -75,7 +75,7 @@ export default function QrPage() {
                 Upgrade to the <strong>Business Plan</strong> to generate up to 5 unique table/location QR codes. Track scan locations automatically!
               </p>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => window.location.href = '/dashboard/billing'} className="border-accent text-accent hover:bg-accent/5">
+            <Button size="sm" variant="ghost" onClick={() => window.location.href = '/dashboard/billing'} className="w-full sm:w-auto border-accent text-accent hover:bg-accent/5">
               Upgrade to Business 🚀
             </Button>
           </div>
@@ -101,10 +101,10 @@ export default function QrPage() {
           <p className="text-xs text-muted mb-1">Generated QR code URL</p>
           <p className="text-accent text-sm font-medium mb-6 break-all">{url}</p>
 
-          <div className="flex gap-3 flex-wrap justify-center">
-            <Button size="sm" onClick={() => toast.success('QR Downloaded! 🎉')}>⬇ Download PNG</Button>
-            <Button variant="ghost" size="sm" onClick={() => toast.success('PDF ready! 🖨️')}>🖨 Print PDF</Button>
-            <Button variant="ghost" size="sm" onClick={() => handleCopy(url)}>🔗 Copy Link</Button>
+          <div className="flex gap-3 flex-wrap justify-center w-full">
+            <Button size="sm" className="w-full sm:w-auto" onClick={() => toast.success('QR Downloaded! 🎉')}>⬇ Download PNG</Button>
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => toast.success('PDF ready! 🖨️')}>🖨 Print PDF</Button>
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => handleCopy(url)}>🔗 Copy Link</Button>
           </div>
         </div>
 

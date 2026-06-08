@@ -40,13 +40,13 @@ export default function MenuPage() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 overflow-x-auto flex-nowrap scrollbar-none pb-1.5 -mx-4 px-4 md:mx-0 md:px-0 w-full md:w-auto">
           {['all', ...MENU_CATEGORIES].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                'px-3.5 py-2 rounded-lg border text-xs font-medium transition-all',
+                'px-3.5 py-2 rounded-lg border text-xs font-medium transition-all flex-shrink-0',
                 activeCategory === cat
                   ? 'bg-accent/10 border-accent text-accent'
                   : 'bg-transparent border-border text-muted hover:border-[#f0f0f5]/30 hover:text-[#f0f0f5]'
@@ -59,7 +59,7 @@ export default function MenuPage() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map((item) => (
           <MenuItemCard key={item.id} item={item} onEdit={openEdit} onDelete={handleDelete} />
         ))}

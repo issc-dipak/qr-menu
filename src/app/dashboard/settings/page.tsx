@@ -92,13 +92,13 @@ export default function SettingsPage() {
 
       <div className="grid lg:grid-cols-[200px_1fr] gap-6">
         {/* Tab Nav */}
-        <nav className="flex lg:flex-col gap-1">
+        <nav className="flex lg:flex-col gap-1 overflow-x-auto flex-nowrap scrollbar-none pb-2 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all border-none font-sans text-left cursor-pointer w-full',
+                'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all border-none font-sans text-left cursor-pointer w-auto lg:w-full flex-shrink-0',
                 activeTab === tab.id
                   ? 'bg-accent/10 text-accent font-medium'
                   : 'bg-transparent text-muted hover:bg-white/4 hover:text-[#f0f0f5]'
@@ -127,7 +127,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Full Name" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} />
                   <Input label="Email" type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} />
                 </div>
@@ -144,14 +144,14 @@ export default function SettingsPage() {
               <p className="text-muted text-sm mb-5">This appears on your customer menu</p>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Shop Name" value={shopForm.shop_name} onChange={(e) => setShopForm({ ...shopForm, shop_name: e.target.value })} />
                   <Select label="Category" options={CAT_OPTIONS} value={shopForm.shop_category} onChange={(e) => setShopForm({ ...shopForm, shop_category: e.target.value })} />
                 </div>
                 <Input label="Address" value={shopForm.shop_address} onChange={(e) => setShopForm({ ...shopForm, shop_address: e.target.value })} placeholder="Sector 14, Delhi" />
                 <Textarea label="Description" value={shopForm.shop_description} onChange={(e) => setShopForm({ ...shopForm, shop_description: e.target.value })} placeholder="Tell customers about your shop..." />
                 <Input label="Opening Hours" value={shopForm.shop_hours} onChange={(e) => setShopForm({ ...shopForm, shop_hours: e.target.value })} placeholder="7 AM – 10 PM" />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Razorpay Linked Account ID" value={shopForm.razorpay_linked_account_id} onChange={(e) => setShopForm({ ...shopForm, razorpay_linked_account_id: e.target.value })} placeholder="E.g., acc_N9hE4t78XopQW" />
                   <Input label="Platform Commission (%)" value={String(shopForm.platform_commission_pct)} disabled placeholder="2.00" />
                 </div>

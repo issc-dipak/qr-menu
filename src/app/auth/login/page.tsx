@@ -67,7 +67,7 @@ export default function LoginPage() {
           <Input label="Email Address" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} />
           <Input label="Password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} />
           <div className="text-right">
-            <a href="#" className="text-xs text-accent hover:underline">Forgot password?</a>
+            <Link href="/auth/forgot-password" className="text-xs text-accent hover:underline">Forgot password?</Link>
           </div>
           <Button fullWidth loading={loading} onClick={onSubmit} size="lg">
             Login to Dashboard →
