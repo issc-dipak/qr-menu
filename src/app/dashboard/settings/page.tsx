@@ -203,7 +203,7 @@ export default function SettingsPage() {
                       { value: 'list', label: 'List Style (Compact)' },
                     ]}
                     value={themeForm.layout}
-                    onChange={(e) => setThemeForm({ ...themeForm, layout: e.target.value })}
+                    onChange={(e) => setThemeForm({ ...themeForm, layout: e.target.value as 'grid' | 'list' })}
                   />
                 </div>
 
