@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const { owner, updateOwner } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [notifs, setNotifs] = useState({ daily: true, weekly: true, product: false, marketing: true });
-  const [themeForm, setThemeForm] = useState({ primaryColor: '#00e5a0', fontFamily: 'Syne', layout: 'grid' });
+  const [themeForm, setThemeForm] = useState<{ primaryColor: string; fontFamily: string; layout: 'grid' | 'list' }>({ primaryColor: '#00e5a0', fontFamily: 'Syne', layout: 'grid' });
 
   const [profileForm, setProfileForm] = useState({
     name: '',
