@@ -391,6 +391,252 @@ export default function OrdersHistoryPage() {
     toast.success(`Order status updated to ${newStatus}! 🎉`);
   };
 
+  const exportToCSV = () => {
+    if (orders.length === 0) {
+      toast.error('No orders to export!');
+      return;
+    }
+    
+    const headers = ['Order ID', 'Table', 'Items', 'Total (INR)', 'Date & Time', 'Payment Status', 'Order Status', 'Instructions'];
+    const rows = orders.map((o) => [
+      o.id,
+      o.table,
+      `"${o.items.replace(/"/g, '""')}"`,
+      o.total,
+      `"${o.date}"`,
+      o.paymentStatus.toUpperCase(),
+      o.status.toUpperCase(),
+      o.instructions ? `"${o.instructions.replace(/"/g, '""')}"` : ''
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV Report downloaded! 📊');
+  };
+
+  const exportToPDF = () => {
+    if (orders.length === 0) {
+      toast.error('No orders to export!');
+      return;
+    }
+
+    const printWindow = window.open('', '', 'width=1000,height=800,toolbar=0,scrollbars=1,status=0');
+    if (!printWindow) {
+      toast.error('Pop-up blocked! Please allow pop-ups to download the PDF.');
+      return;
+    }
+
+    const reportDate = new Date().toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const totalRevenue = orders
+      .filter((o) => o.status === 'completed' || o.paymentStatus === 'paid')
+      .reduce((sum, o) => sum + o.total, 0);
+
+    const tableRows = orders.map(o => `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px; font-weight: bold; font-family: monospace;">${o.id}</td>
+        <td style="padding: 10px;">${o.table}</td>
+        <td style="padding: 10px; max-width: 300px; word-break: break-all;">${o.items}</td>
+        <td style="padding: 10px;">${o.date}</td>
+        <td style="padding: 10px;"><span class="badge ${o.paymentStatus === 'paid' ? 'badge-paid' : 'badge-unpaid'}">${o.paymentStatus.toUpperCase()}</span></td>
+        <td style="padding: 10px;"><span class="badge ${o.status === 'completed' ? 'badge-completed' : o.status === 'cancelled' ? 'badge-cancelled' : o.status === 'pending'}">${o.status.toUpperCase()}</span></td>
+        <td style="padding: 10px; font-weight: bold; text-align: right;">₹${o.total}</td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Orders Report - ${owner?.shop?.name || 'DukaanQR'}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: #1e293b;
+              margin: 40px;
+              line-height: 1.5;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              border-bottom: 2px solid #e2e8f0;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .shop-name {
+              font-size: 24px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin: 0;
+            }
+            .shop-meta {
+              font-size: 11px;
+              color: #64748b;
+              margin-top: 5px;
+            }
+            .report-title {
+              text-align: right;
+            }
+            .report-title h1 {
+              font-size: 20px;
+              font-weight: 800;
+              margin: 0;
+              color: #0f172a;
+            }
+            .report-title p {
+              font-size: 11px;
+              color: #64748b;
+              margin-top: 5px;
+            }
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              gap: 15px;
+              margin-bottom: 30px;
+            }
+            .stat-card {
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              padding: 12px;
+              background-color: #f8fafc;
+            }
+            .stat-card p {
+              margin: 0;
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #64748b;
+              letter-spacing: 0.5px;
+            }
+            .stat-card h3 {
+              margin: 5px 0 0 0;
+              font-size: 18px;
+              font-weight: 800;
+              color: #0f172a;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+              font-size: 12px;
+            }
+            th {
+              background-color: #f1f5f9;
+              color: #475569;
+              font-weight: 700;
+              text-transform: uppercase;
+              padding: 10px;
+              text-align: left;
+              border-bottom: 2px solid #cbd5e1;
+            }
+            .badge {
+              font-size: 10px;
+              font-weight: 700;
+              padding: 3px 6px;
+              border-radius: 4px;
+              text-transform: uppercase;
+            }
+            .badge-paid { background-color: #dcfce7; color: #15803d; }
+            .badge-unpaid { background-color: #fef9c3; color: #a16207; }
+            .badge-completed { background-color: #dcfce7; color: #15803d; }
+            .badge-pending { background-color: #ffedd5; color: #c2410c; }
+            .badge-cancelled { background-color: #fee2e2; color: #b91c1c; }
+            .footer {
+              text-align: center;
+              font-size: 10px;
+              color: #94a3b8;
+              border-top: 1px solid #e2e8f0;
+              padding-top: 20px;
+              margin-top: 40px;
+            }
+            @media print {
+              body { margin: 20px; }
+              .stat-card { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .badge-paid { background-color: #dcfce7 !important; color: #15803d !important; -webkit-print-color-adjust: exact; }
+              .badge-unpaid { background-color: #fef9c3 !important; color: #a16207 !important; -webkit-print-color-adjust: exact; }
+              .badge-completed { background-color: #dcfce7 !important; color: #15803d !important; -webkit-print-color-adjust: exact; }
+              .badge-pending { background-color: #ffedd5 !important; color: #c2410c !important; -webkit-print-color-adjust: exact; }
+              .badge-cancelled { background-color: #fee2e2 !important; color: #b91c1c !important; -webkit-print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          <div class="header">
+            <div>
+              <h2 class="shop-name">${owner?.shop?.name || 'Sharma Chai Corner'}</h2>
+              <p class="shop-meta">${owner?.shop?.address || 'Sector 14, Delhi'}</p>
+              ${owner?.shop?.phone ? `<p class="shop-meta">Ph: ${owner.shop.phone}</p>` : ''}
+            </div>
+            <div class="report-title">
+              <h1>Sales Transaction Ledger</h1>
+              <p>Generated: ${reportDate}</p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <p>Total Revenue</p>
+              <h3>₹${totalRevenue.toLocaleString('en-IN')}</h3>
+            </div>
+            <div class="stat-card">
+              <p>Total Orders</p>
+              <h3>${orders.length}</h3>
+            </div>
+            <div class="stat-card">
+              <p>Completed Orders</p>
+              <h3>${orders.filter(o => o.status === 'completed').length}</h3>
+            </div>
+            <div class="stat-card">
+              <p>Pending Orders</p>
+              <h3>${orders.filter(o => o.status === 'pending').length}</h3>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="padding: 10px;">Order ID</th>
+                <th style="padding: 10px;">Table</th>
+                <th style="padding: 10px;">Items</th>
+                <th style="padding: 10px;">Date & Time</th>
+                <th style="padding: 10px;">Payment</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px; text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            <p>System Generated Report - DukaanQR digital menu platform.</p>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const togglePaymentStatus = (id: string) => {
     const updated = orders.map(o => o.id === id ? { ...o, paymentStatus: 'paid' as const } : o);
     setOrders(updated);
@@ -571,23 +817,6 @@ export default function OrdersHistoryPage() {
 
         {/* Filters Group */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Status Buttons */}
-          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none">
-            {(['all', 'pending', 'completed', 'cancelled'] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setStatusFilter(f)}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-shrink-0',
-                  statusFilter === f ? 'bg-accent text-bg' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
-                )}
-                style={statusFilter === f ? { backgroundColor: primaryColor } : {}}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
           {/* Payment Filter */}
           <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none">
             {([
@@ -606,6 +835,22 @@ export default function OrdersHistoryPage() {
                 {f.label}
               </button>
             ))}
+          </div>
+
+          {/* Export Actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={exportToCSV}
+              className="bg-surface border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
+            >
+              📊 Export CSV
+            </button>
+            <button
+              onClick={exportToPDF}
+              className="bg-[#f0f0f5]/5 border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
+            >
+              📄 Download PDF
+            </button>
           </div>
         </div>
       </div>
