@@ -464,7 +464,7 @@ export default function OrdersHistoryPage() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Orders Report - ${owner?.shop?.name || 'DukaanQR'}</title>
+          <title>Orders Report - ${owner?.shop_name || 'DukaanQR'}</title>
           <style>
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -582,9 +582,8 @@ export default function OrdersHistoryPage() {
         <body onload="window.print(); window.close();">
           <div class="header">
             <div>
-              <h2 class="shop-name">${owner?.shop?.name || 'Sharma Chai Corner'}</h2>
-              <p class="shop-meta">${owner?.shop?.address || 'Sector 14, Delhi'}</p>
-              ${owner?.shop?.phone ? `<p class="shop-meta">Ph: ${owner.shop.phone}</p>` : ''}
+              <h2 class="shop-name">${owner?.shop_name || 'Sharma Chai Corner'}</h2>
+              <p class="shop-meta">${owner?.shop_address || ''}</p>
             </div>
             <div class="report-title">
               <h1>Sales Transaction Ledger</h1>
@@ -1046,9 +1045,8 @@ export default function OrdersHistoryPage() {
               style={{ fontFamily: 'Courier New, Courier, monospace' }}
             >
               <div className="text-center space-y-1">
-                <h2 className="font-bold text-sm uppercase tracking-wider">{owner?.shop?.name || 'Dukaan Menu'}</h2>
-                <p className="text-[10px] text-stone-500">{owner?.shop?.address || 'Digital QR Order'}</p>
-                {owner?.shop?.phone && <p className="text-[10px] text-stone-500">Ph: {owner.shop.phone}</p>}
+                <h2 className="font-bold text-sm uppercase tracking-wider">{owner?.shop_name || 'Dukaan Menu'}</h2>
+                <p className="text-[10px] text-stone-500">{owner?.shop_address || 'Digital QR Order'}</p>
               </div>
 
               <div className="border-t border-dashed border-stone-400 my-3" />
