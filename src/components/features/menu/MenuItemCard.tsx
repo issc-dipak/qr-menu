@@ -29,9 +29,26 @@ export function MenuItemCard({ item, onEdit, onDelete }: MenuItemCardProps) {
       </div>
 
       <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <h3 className="font-semibold text-sm">{item.name}</h3>
-          <span className="font-display font-black text-accent text-base">
+        <div className="flex items-start justify-between mb-1 gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span 
+              className="w-3.5 h-3.5 border flex items-center justify-center flex-shrink-0" 
+              style={{ 
+                borderColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335',
+                padding: '1px'
+              }}
+              title={(item as any).is_veg !== false ? 'Veg' : 'Non-Veg'}
+            >
+              <span 
+                className="w-1.5 h-1.5 rounded-full" 
+                style={{ 
+                  backgroundColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335' 
+                }} 
+              />
+            </span>
+            <h3 className="font-semibold text-sm truncate">{item.name}</h3>
+          </div>
+          <span className="font-display font-black text-accent text-base flex-shrink-0">
             {formatCurrency(item.price)}
           </span>
         </div>

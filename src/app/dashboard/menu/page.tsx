@@ -5,6 +5,7 @@ import { MenuItemForm } from '@/components/features/menu/MenuItemForm';
 import { useMenu } from '@/hooks';
 import { MENU_CATEGORIES } from '@/constants';
 import { cn } from '@/utils';
+import { useMenuStore } from '@/store';
 
 export default function MenuPage() {
   const {
@@ -14,6 +15,18 @@ export default function MenuPage() {
     handleAdd, handleUpdate, handleDelete,
     openEdit, openAdd, closeModal,
   } = useMenu();
+
+  const rawItems = useMenuStore((state) => state.items);
+  const dynamicCategories = Array.from(
+    new Set([
+      'Hot Drinks',
+      'Cold Drinks',
+      'Snacks',
+      'Main Course',
+      'Desserts',
+      ...rawItems.map((item) => item.category),
+    ])
+  );
 
   return (
     <div>
@@ -41,7 +54,7 @@ export default function MenuPage() {
 
         {/* Category Filter */}
         <div className="flex gap-2 overflow-x-auto flex-nowrap scrollbar-none pb-1.5 -mx-4 px-4 md:mx-0 md:px-0 w-full md:w-auto">
-          {['all', ...MENU_CATEGORIES].map((cat) => (
+          {['all', ...dynamicCategories].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}

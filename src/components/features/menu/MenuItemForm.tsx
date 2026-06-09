@@ -6,7 +6,7 @@ import { Input, Select, Textarea } from '@/components/ui/Input';
 import { ITEM_EMOJIS, MENU_CATEGORIES } from '@/constants';
 import { cn } from '@/utils';
 import type { MenuItem, MenuItemCategory } from '@/types';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useMenuStore } from '@/store';
 import { uploadMenuItemImage } from '@/services/menuService';
 import toast from 'react-hot-toast';
 
@@ -17,10 +17,9 @@ interface MenuItemFormProps {
   editingItem?: MenuItem | null;
 }
 
-const CATEGORY_OPTIONS = MENU_CATEGORIES.map((c) => ({ value: c, label: c }));
-
 export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuItemFormProps) {
   const { owner } = useAuthStore();
+  const { items } = useMenuStore();
   const [emoji, setEmoji] = useState('🍵');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -29,8 +28,22 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
   const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isVeg, setIsVeg] = useState(true);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
 
   const isFree = !owner || owner.plan === 'free';
+
+  // Get all unique categories currently in the menu, excluding defaults
+  const customCatsInMenu = items
+    ? Array.from(new Set(items.map(i => i.category))).filter(c => !MENU_CATEGORIES.includes(c))
+    : [];
+
+  const categoryOptions = [
+    ...MENU_CATEGORIES.map((c) => ({ value: c, label: c })),
+    ...customCatsInMenu.map((c) => ({ value: c, label: c })),
+    { value: 'custom', label: '+ Add Custom Category...' }
+  ];
 
   useEffect(() => {
     if (editingItem) {
@@ -38,23 +51,38 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
       setName(editingItem.name);
       setDescription(editingItem.description || '');
       setPrice(String(editingItem.price));
-      setCategory(editingItem.category as MenuItemCategory);
       setImageUrl(editingItem.image_url || '');
+      setIsVeg((editingItem as any).is_veg !== false);
+
+      const isDefaultOrExisting = [...MENU_CATEGORIES, ...customCatsInMenu].includes(editingItem.category);
+      if (isDefaultOrExisting) {
+        setCategory(editingItem.category);
+        setIsCustomCategory(false);
+        setCustomCategory('');
+      } else {
+        setCategory('Other');
+        setIsCustomCategory(true);
+        setCustomCategory(editingItem.category);
+      }
     } else {
       setEmoji('🍵');
       setName('');
       setDescription('');
       setPrice('');
       setCategory('Hot Drinks');
+      setIsCustomCategory(false);
+      setCustomCategory('');
       setImageUrl('');
+      setIsVeg(true);
     }
     setErrors({});
-  }, [editingItem, isOpen]);
+  }, [editingItem, isOpen, items]);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = 'Item name is required';
     if (!price || isNaN(Number(price)) || Number(price) <= 0) e.price = 'Valid price is required';
+    if (isCustomCategory && !customCategory.trim()) e.customCategory = 'Custom category name is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -89,9 +117,10 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
       name: name.trim(),
       description: description.trim(),
       price: Number(price),
-      category,
+      category: isCustomCategory ? customCategory.trim() : category,
       status: 'active',
       image_url: imageUrl || null,
+      is_veg: isVeg,
     });
   };
 
@@ -190,7 +219,61 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
 
         <div className="grid grid-cols-2 gap-3">
           <Input label="Price (₹) *" type="number" placeholder="20" value={price} onChange={(e) => setPrice(e.target.value)} error={errors.price} />
-          <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value as MenuItemCategory)} options={CATEGORY_OPTIONS} />
+          <Select
+            label="Category"
+            value={isCustomCategory ? 'custom' : category}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === 'custom') {
+                setIsCustomCategory(true);
+              } else {
+                setIsCustomCategory(false);
+                setCategory(val);
+              }
+            }}
+            options={categoryOptions}
+          />
+        </div>
+
+        {isCustomCategory && (
+          <Input
+            label="Custom Category Name *"
+            placeholder="e.g. Biryani, Soups, etc."
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            error={errors.customCategory}
+          />
+        )}
+
+        {/* Veg / Non-Veg Selection */}
+        <div>
+          <label className="block text-[10px] font-bold tracking-wider uppercase text-muted mb-2">Dietary Type *</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsVeg(true)}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                isVeg 
+                  ? "bg-accent/15 border-accent text-accent" 
+                  : "bg-surface-2 border-border text-muted hover:border-accent/40"
+              )}
+            >
+              Veg Only 🟢
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsVeg(false)}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                !isVeg 
+                  ? "bg-danger/15 border-danger text-danger" 
+                  : "bg-surface-2 border-border text-muted hover:border-danger/40"
+              )}
+            >
+              Non-Veg 🔴
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3 pt-2">

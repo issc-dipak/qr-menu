@@ -8,6 +8,7 @@ import { cn } from '@/utils';
 import type { Owner, MenuItem } from '@/types/supabase';
 import { useCartStore } from '@/store';
 import { CartDrawer } from '@/components/features/menu/CartDrawer';
+import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
 interface PageProps { params: { slug: string }; }
@@ -17,11 +18,62 @@ export default function CustomerMenuPage({ params }: PageProps) {
   const [owner, setOwner] = useState<Owner | any>(null);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [ordersHistoryOpen, setOrdersHistoryOpen] = useState(false);
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
+  const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg'>('all');
+  const [waiterModalOpen, setWaiterModalOpen] = useState(false);
+  const [tableInput, setTableInput] = useState('');
+  const [waiterCallLoading, setWaiterCallLoading] = useState(false);
 
   const cart = useCartStore();
+
+  useEffect(() => {
+    if (cart.tableNumber) {
+      setTableInput(cart.tableNumber);
+    }
+  }, [cart.tableNumber]);
+
+  const handleCallWaiter = async () => {
+    if (!tableInput.trim()) {
+      toast.error('Please enter your Table Number.');
+      return;
+    }
+    
+    setWaiterCallLoading(true);
+    const toastId = toast.loading('Calling waiter...');
+    try {
+      const { error } = await supabase.from('waiter_calls').insert({
+        owner_id: owner.id,
+        table_number: `Table ${tableInput.trim()}`,
+        status: 'pending',
+      });
+      
+      if (error) throw error;
+      
+      toast.success('Waiter called! A server will be with you shortly. 🛎️', { id: toastId });
+      setWaiterModalOpen(false);
+    } catch (err: any) {
+      console.error('Call waiter failed:', err);
+      toast.error(err.message || 'Failed to call waiter.', { id: toastId });
+    } finally {
+      setWaiterCallLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ordersHistoryOpen) {
+      const stored = localStorage.getItem('owner-orders-history');
+      if (stored) {
+        setCustomerOrders(JSON.parse(stored));
+      } else {
+        setCustomerOrders([]);
+      }
+    }
+  }, [ordersHistoryOpen]);
 
   useEffect(() => {
     async function load() {
@@ -34,7 +86,20 @@ export default function CustomerMenuPage({ params }: PageProps) {
   }, [params.slug]);
 
   const categories = Array.from(new Set(items.map((i) => i.category)));
-  const filtered   = activeCategory === 'all' ? items : items.filter((i) => i.category === activeCategory);
+  const filtered = items.filter((item) => {
+    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (item.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesDiet = true;
+    if (dietFilter === 'veg') {
+      matchesDiet = (item as any).is_veg !== false;
+    } else if (dietFilter === 'non-veg') {
+      matchesDiet = (item as any).is_veg === false;
+    }
+    
+    return matchesCategory && matchesSearch && matchesDiet;
+  });
 
   if (loading) return (
     <div className="min-h-screen bg-[#0d1a12] flex items-center justify-center">
@@ -65,7 +130,22 @@ export default function CustomerMenuPage({ params }: PageProps) {
           <p className="font-display font-black text-accent text-sm md:text-base leading-tight truncate" style={{ color: primaryColor }}>{owner.shop_avatar} {owner.shop_name}</p>
           {owner.shop_address && <p className="text-[10px] text-accent/50 truncate">{owner.shop_address}</p>}
         </div>
-        <Link href="/auth/login" className="ml-3 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">Owner →</Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setWaiterModalOpen(true)}
+            className="text-xs bg-gold/10 border border-gold/20 text-gold px-3 py-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
+          >
+            🛎️ Call Waiter
+          </button>
+          <button
+            onClick={() => setOrdersHistoryOpen(true)}
+            className="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
+            style={{ color: primaryColor, borderColor: `${primaryColor}30` }}
+          >
+            📋 My Orders
+          </button>
+          <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">Owner →</Link>
+        </div>
       </nav>
 
       <div className="pt-[56px]">
@@ -80,6 +160,69 @@ export default function CustomerMenuPage({ params }: PageProps) {
               Open Now{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
             </div>
             {owner.shop_description && <p className="text-accent/40 text-xs mt-3 max-w-xs mx-auto leading-relaxed">{owner.shop_description}</p>}
+          </div>
+        </div>
+
+        {/* Search Box & Diet Filter */}
+        <div className="max-w-xl mx-auto px-4 pt-6 pb-2 space-y-3">
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-accent/40 text-sm">
+              🔍
+            </span>
+            <input
+              type="text"
+              placeholder="Search dishes (e.g., Chai, Coffee)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl pl-10 pr-10 py-3 text-xs text-[#f0f0f5] placeholder:text-accent/30 outline-none transition-all"
+              style={{ caretColor: primaryColor }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-accent/40 hover:text-accent text-xs bg-transparent border-none cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Diet Segmented Control */}
+          <div className="flex bg-white/[0.02] border border-accent/10 rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setDietFilter('all')}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none",
+                dietFilter === 'all'
+                  ? "bg-white/[0.07] text-white"
+                  : "bg-transparent text-accent/40 hover:text-accent/70"
+              )}
+            >
+              All Dishes 🍽️
+            </button>
+            <button
+              onClick={() => setDietFilter('veg')}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none flex items-center justify-center gap-1",
+                dietFilter === 'veg'
+                  ? "bg-accent/15 text-accent border border-accent/20"
+                  : "bg-transparent text-accent/40 hover:text-accent/70"
+              )}
+              style={dietFilter === 'veg' ? { backgroundColor: `${primaryColor}20`, color: primaryColor, borderColor: `${primaryColor}30` } : {}}
+            >
+              Veg Only 🟢
+            </button>
+            <button
+              onClick={() => setDietFilter('non-veg')}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none flex items-center justify-center gap-1",
+                dietFilter === 'non-veg'
+                  ? "bg-danger/15 text-danger border border-danger/20"
+                  : "bg-transparent text-accent/40 hover:text-accent/70"
+              )}
+            >
+              Non-Veg Only 🔴
+            </button>
           </div>
         </div>
 
@@ -109,7 +252,24 @@ export default function CustomerMenuPage({ params }: PageProps) {
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-accent/8 rounded-xl flex items-center justify-center text-2xl md:text-3xl flex-shrink-0 border border-accent/10">{item.emoji}</div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-[#f0f0f5] text-sm md:text-base leading-snug">{item.name}</h3>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span 
+                    className="w-3.5 h-3.5 border flex items-center justify-center flex-shrink-0" 
+                    style={{ 
+                      borderColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335',
+                      padding: '1px'
+                    }}
+                    title={(item as any).is_veg !== false ? 'Veg' : 'Non-Veg'}
+                  >
+                    <span 
+                      className="w-1.5 h-1.5 rounded-full" 
+                      style={{ 
+                        backgroundColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335' 
+                      }} 
+                    />
+                  </span>
+                  <h3 className="font-bold text-[#f0f0f5] text-sm md:text-base leading-snug truncate">{item.name}</h3>
+                </div>
                 {item.description && <p className="text-white/35 text-xs mt-0.5 line-clamp-2 leading-relaxed">{item.description}</p>}
                 <p className="text-accent/40 text-[10px] mt-1">{item.category}</p>
               </div>
@@ -165,6 +325,134 @@ export default function CustomerMenuPage({ params }: PageProps) {
           platformCommissionPct={owner.platform_commission_pct}
           onClose={() => setCartOpen(false)}
         />
+      )}
+
+      {/* Customer Orders History Drawer */}
+      {ordersHistoryOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOrdersHistoryOpen(false)} />
+
+          {/* Drawer Panel */}
+          <div className="relative w-full max-w-md bg-[#0d1a12] border-l border-accent/10 h-full flex flex-col z-10 animate-fade-up" style={{ fontFamily: customFont }}>
+            {/* Header */}
+            <div className="p-4 border-b border-accent/10 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📋</span>
+                <h2 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>My Orders</h2>
+                <span className="bg-accent/15 text-accent text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: `${primaryColor}15` }}>
+                  {customerOrders.length}
+                </span>
+              </div>
+              <button onClick={() => setOrdersHistoryOpen(false)} className="text-accent/50 hover:text-accent transition-colors text-sm font-bold border-none bg-transparent cursor-pointer">✕</button>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {customerOrders.length === 0 ? (
+                <div className="text-center py-20 text-accent/30">
+                  <span className="text-4xl block mb-2">🍽️</span>
+                  <p className="text-sm">You haven&apos;t placed any orders yet.</p>
+                  <p className="text-[10px] text-accent/20 mt-1">Add items to cart and check out to see them here.</p>
+                </div>
+              ) : (
+                customerOrders.map((order: any) => (
+                  <div key={order.id} className="bg-white/[0.02] border border-accent/10 p-4 rounded-xl space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-xs text-accent" style={{ color: primaryColor }}>{order.id}</span>
+                      <span className="bg-accent-2/10 text-accent-2 text-[10px] font-bold px-2 py-0.5 rounded-full">{order.table}</span>
+                    </div>
+
+                    <div className="text-xs text-[#f0f0f5] font-medium leading-relaxed">
+                      {order.items}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2 border-t border-accent/10 text-xs">
+                      <div>
+                        <div className="text-accent/40 text-[9px]">{order.date}</div>
+                        <div className="font-black text-sm text-[#f0f0f5] mt-0.5">₹{order.total}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${
+                          order.paymentStatus === 'paid'
+                            ? 'bg-accent/10 text-accent border-accent/20'
+                            : 'bg-gold/10 text-gold border-gold/20'
+                        }`} style={order.paymentStatus === 'paid' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
+                          {order.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${
+                          order.status === 'completed'
+                            ? 'bg-accent/10 text-accent border-accent/20'
+                            : order.status === 'cancelled'
+                            ? 'bg-danger/10 text-danger border-danger/20'
+                            : 'bg-gold/10 text-gold border-gold/20'
+                        }`} style={order.status === 'completed' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Call Waiter Modal */}
+      {waiterModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWaiterModalOpen(false)} />
+
+          {/* Modal Content */}
+          <div className="relative w-full max-w-sm bg-[#0d1a12] border border-accent/15 rounded-2xl p-6 z-10 shadow-2xl animate-fade-up" style={{ fontFamily: customFont }}>
+            <button
+              onClick={() => setWaiterModalOpen(false)}
+              className="absolute top-4 right-4 text-accent/50 hover:text-accent font-bold border-none bg-transparent cursor-pointer text-sm"
+            >
+              ✕
+            </button>
+
+            <div className="text-center space-y-4">
+              <span className="text-4xl block animate-bounce">🛎️</span>
+              <h3 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>Call Waiter (वेटर बुलाएं)</h3>
+              <p className="text-xs text-accent/60 leading-relaxed">
+                Please enter your Table Number below to summon assistance. A waiter will reach you shortly.
+              </p>
+
+              <div className="space-y-3 pt-2">
+                <input
+                  type="text"
+                  placeholder="E.g., 4"
+                  value={tableInput}
+                  onChange={(e) => setTableInput(e.target.value)}
+                  className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl px-4 py-3 text-center font-bold text-sm text-[#f0f0f5] placeholder:text-accent/20 outline-none transition-all"
+                  style={{ caretColor: primaryColor }}
+                />
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setWaiterModalOpen(false)}
+                    className="flex-1 bg-transparent hover:bg-white/[0.03] border border-accent/10 hover:border-accent/30 text-accent/70 hover:text-accent font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCallWaiter}
+                    disabled={waiterCallLoading}
+                    className="flex-1 font-bold py-2.5 rounded-xl text-xs text-bg hover:opacity-90 transition-all cursor-pointer border-none"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {waiterCallLoading ? 'Calling...' : 'Call Now'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

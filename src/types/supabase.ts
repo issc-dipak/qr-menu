@@ -61,6 +61,7 @@ export interface MenuItemsTable {
     status: 'active' | 'draft';
     sort_order: number;
     image_url: string | null;
+    is_veg: boolean;
     created_at: string;
     updated_at: string;
   };
@@ -75,6 +76,7 @@ export interface MenuItemsTable {
     status?: 'active' | 'draft';
     sort_order?: number;
     image_url?: string | null;
+    is_veg?: boolean;
     created_at?: string;
     updated_at?: string;
   };
@@ -130,6 +132,25 @@ export interface SubscriptionsTable {
   Relationships: [];
 }
 
+export interface WaiterCallsTable {
+  Row: {
+    id: string;
+    owner_id: string;
+    table_number: string;
+    status: 'pending' | 'resolved';
+    created_at: string;
+  };
+  Insert: {
+    id?: string;
+    owner_id: string;
+    table_number: string;
+    status?: 'pending' | 'resolved';
+    created_at?: string;
+  };
+  Update: Partial<WaiterCallsTable['Insert']>;
+  Relationships: [];
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -137,6 +158,7 @@ export interface Database {
       menu_items: MenuItemsTable;
       qr_scans: QrScansTable;
       subscriptions: SubscriptionsTable;
+      waiter_calls: WaiterCallsTable;
     };
     Views: {
       owner_analytics: {
@@ -164,3 +186,4 @@ export type Owner = Database['public']['Tables']['owners']['Row'];
 export type MenuItem = Database['public']['Tables']['menu_items']['Row'];
 export type QrScan = Database['public']['Tables']['qr_scans']['Row'];
 export type Subscription = Database['public']['Tables']['subscriptions']['Row'];
+export type WaiterCall = Database['public']['Tables']['waiter_calls']['Row'];

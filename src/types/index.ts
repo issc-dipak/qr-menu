@@ -1,11 +1,5 @@
 // ─── MENU ITEM ───────────────────────────────────────────────
-export type MenuItemCategory =
-  | 'Hot Drinks'
-  | 'Cold Drinks'
-  | 'Snacks'
-  | 'Main Course'
-  | 'Desserts'
-  | 'Other';
+export type MenuItemCategory = string;
 
 export type MenuItemStatus = 'active' | 'draft';
 

@@ -38,6 +38,7 @@ export async function addMenuItem(
     category: string;
     status?: 'active' | 'draft';
     image_url?: string | null;
+    is_veg?: boolean;
   }
 ): Promise<MenuItem> {
   // Get current max sort_order
@@ -66,7 +67,7 @@ export async function updateMenuItem(
   itemId: string,
   updates: Partial<Pick<MenuItem,
     | 'emoji' | 'name' | 'description'
-    | 'price' | 'category' | 'status' | 'image_url'
+    | 'price' | 'category' | 'status' | 'image_url' | 'is_veg'
   >>
 ): Promise<MenuItem> {
   const { data, error } = await supabase

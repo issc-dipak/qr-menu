@@ -22,6 +22,8 @@ export function CartDrawer({
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0); // flat or percent reduction
   const [selectedLang, setSelectedLang] = useState<'en' | 'hi'>('en');
+  const [instructions, setInstructions] = useState('');
+  const [peopleCount, setPeopleCount] = useState(1);
 
   const t = {
     en: {
@@ -84,6 +86,7 @@ export function CartDrawer({
         id: `ORD-${Math.floor(100 + Math.random() * 900)}`,
         table: `Table ${tableNumber || 'N/A'}`,
         items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+        instructions: instructions.trim() || null,
         total: finalTotal,
         date: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
         status: 'pending',
@@ -206,6 +209,56 @@ export function CartDrawer({
               </div>
             </div>
 
+            {/* Special Instructions */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">
+                {selectedLang === 'en' ? 'Special Instructions 📝' : 'विशेष निर्देश 📝'}
+              </label>
+              <textarea
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder={selectedLang === 'en' ? 'E.g., Make it extra spicy, no onions, etc.' : 'जैसे: ज़्यादा तीखा करें, प्याज न डालें, आदि।'}
+                className="w-full bg-surface-2 border border-border rounded-xl px-3.5 py-2 text-xs text-[#f0f0f5] placeholder:text-muted outline-none focus:border-accent transition-all resize-none h-16"
+              />
+            </div>
+
+            {/* Split Bill Calculator */}
+            <div className="bg-white/[0.02] border border-border/60 p-3 rounded-xl">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted">
+                    {selectedLang === 'en' ? 'Split Bill 👥' : 'बिल बांटें 👥'}
+                  </label>
+                  <span className="text-[10px] text-muted">
+                    {selectedLang === 'en' ? 'Calculate share per person' : 'प्रति व्यक्ति हिस्सा जोड़ें'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 border border-border bg-bg rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setPeopleCount(prev => Math.max(1, prev - 1))}
+                    className="w-5 h-5 flex items-center justify-center text-xs hover:bg-surface-2 rounded border-none bg-transparent text-[#f0f0f5] cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="text-xs font-bold w-4 text-center">{peopleCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPeopleCount(prev => prev + 1)}
+                    className="w-5 h-5 flex items-center justify-center text-xs hover:bg-surface-2 rounded border-none bg-transparent text-[#f0f0f5] cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {peopleCount > 1 && (
+                <div className="flex justify-between items-center text-xs font-semibold text-accent pt-1.5 border-t border-border/30">
+                  <span>{selectedLang === 'en' ? 'Per Person Share:' : 'प्रति व्यक्ति हिस्सा:'}</span>
+                  <span>₹{Math.round(finalTotal / peopleCount)}</span>
+                </div>
+              )}
+            </div>
+
             {/* Price list */}
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between text-muted">
@@ -289,6 +342,7 @@ export function CartDrawer({
                             id: `ORD-${Math.floor(100 + Math.random() * 900)}`,
                             table: `Table ${tableNumber || 'N/A'}`,
                             items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+                            instructions: instructions.trim() || null,
                             total: finalTotal,
                             date: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
                             status: 'pending',
