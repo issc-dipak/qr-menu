@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getOwnerBySlug } from '@/services/ownerService';
 import { getPublicMenuItems } from '@/services/menuService';
 import { recordScan, recordSessionStart, recordItemViewed } from '@/services/analyticsService';
@@ -9,12 +10,14 @@ import type { Owner, MenuItem } from '@/types/supabase';
 import { useCartStore } from '@/store';
 import { CartDrawer } from '@/components/features/menu/CartDrawer';
 import { supabase } from '@/lib/supabase';
+import { getActiveCustomerSession } from '@/services/customerAuthService';
 import toast from 'react-hot-toast';
 
 interface PageProps { params: { slug: string }; }
 const CAT_ICONS: Record<string,string> = { 'Hot Drinks':'☕','Cold Drinks':'🧋','Snacks':'🥐','Main Course':'🍛','Desserts':'🍰','Other':'📦' };
 
 export default function CustomerMenuPage({ params }: PageProps) {
+  const router = useRouter();
   const [owner, setOwner] = useState<Owner | any>(null);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -72,6 +75,14 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
   useEffect(() => {
     async function load() {
+      // 1. Check for active customer session
+      const activeCustomer = await getActiveCustomerSession();
+      if (!activeCustomer) {
+        router.push(`/menu/${params.slug}/login`);
+        return;
+      }
+      cart.setCustomer(activeCustomer);
+
       const ownerData = await getOwnerBySlug(params.slug);
       if (!ownerData) { setNotFound(true); setLoading(false); return; }
 
@@ -227,7 +238,21 @@ export default function CustomerMenuPage({ params }: PageProps) {
           >
             📋 My Orders
           </button>
-          <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">Owner →</Link>
+          {cart.isAuthenticated && cart.customer ? (
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-[10px] text-accent/70 font-sans font-bold hidden sm:inline bg-accent/5 px-2 py-1 rounded border border-accent/10" style={{ color: primaryColor, borderColor: `${primaryColor}20` }}>
+                👤 {cart.customer.mobileNumber}
+              </span>
+              <button
+                onClick={() => cart.logout().then(() => router.push(`/menu/${params.slug}/login`))}
+                className="text-[10px] sm:text-xs border border-danger/25 text-danger bg-danger/5 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-all cursor-pointer font-bold font-sans"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">Owner →</Link>
+          )}
         </div>
       </nav>
 
