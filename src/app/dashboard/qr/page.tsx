@@ -14,6 +14,11 @@ const QRCodeSVG = dynamic(
   { ssr: false, loading: () => <div className="w-[192px] h-[192px] bg-muted/20 animate-pulse rounded-lg" /> }
 );
 
+const QRCodeCanvas = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeCanvas),
+  { ssr: false }
+);
+
 export default function QrPage() {
   const { owner } = useAuthStore();
   const { data } = useAnalyticsStore();
@@ -31,6 +36,328 @@ export default function QrPage() {
   const isBusiness = owner?.plan === 'business';
   const tableParam = selectedTable > 0 ? `?table=${selectedTable}` : '';
   const url = owner?.shop_slug ? `${appUrl}/menu/${owner.shop_slug}${tableParam}` : 'dukaanqr.in/menu/your-shop';
+
+  const downloadQrPng = () => {
+    const canvasElement = document.querySelector('#qr-code-canvas-container canvas') as HTMLCanvasElement;
+    if (!canvasElement) {
+      toast.error('QR code canvas not found.');
+      return;
+    }
+    
+    try {
+      const png = canvasElement.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = png;
+      downloadLink.download = `${owner?.shop_name || 'shop'}_qr_code_table_${selectedTable}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      toast.success('QR Code PNG downloaded! 📥');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to download PNG.');
+    }
+  };
+
+  const printQrPdf = () => {
+    const svgElement = document.querySelector('#qr-code-container svg');
+    if (!svgElement) {
+      toast.error('QR code not found.');
+      return;
+    }
+
+    try {
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      if (!printWindow) {
+        toast.error('Pop-up blocked! Please allow popups to print.');
+        return;
+      }
+
+      const shopName = owner?.shop_name || 'Our Shop';
+      const tableLabel = selectedTable > 0 ? `TABLE ${selectedTable}` : 'MAIN MENU';
+      const hindiInstruction = 'स्मार्टफोन से स्कैन करें और ऑर्डर करें';
+      const englishInstruction = 'Scan with your smartphone to Order';
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print QR - ${shopName}</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                background: #ffffff;
+                color: #0c0d13;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+              }
+              .ticket-container {
+                border: 4px double #1a1a1a;
+                border-radius: 24px;
+                padding: 40px;
+                width: 450px;
+                text-align: center;
+                background: #ffffff;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+              }
+              .shop-name {
+                font-size: 26px;
+                font-weight: 900;
+                text-transform: uppercase;
+                margin: 0 0 10px 0;
+                color: #0c0d13;
+                letter-spacing: 0.5px;
+              }
+              .table-label {
+                font-size: 14px;
+                font-weight: 700;
+                background: #00e5a0;
+                color: #0c0d13;
+                display: inline-block;
+                padding: 6px 16px;
+                border-radius: 50px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 25px;
+              }
+              .qr-wrapper {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 25px;
+              }
+              .qr-wrapper svg {
+                width: 260px;
+                height: 260px;
+                border: 1px solid #e2e8f0;
+                padding: 10px;
+                border-radius: 16px;
+              }
+              .instruction {
+                font-size: 16px;
+                font-weight: 800;
+                margin: 10px 0 5px 0;
+                color: #1a1a1a;
+              }
+              .sub-instruction {
+                font-size: 12px;
+                color: #64748b;
+                margin: 0;
+              }
+              .footer-tag {
+                font-size: 9px;
+                color: #94a3b8;
+                margin-top: 30px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              }
+              @media print {
+                body { height: auto; }
+                .ticket-container {
+                  box-shadow: none;
+                  border-color: #000;
+                  margin: auto;
+                }
+                .table-label {
+                  background-color: #00e5a0 !important;
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+              }
+            </style>
+          </head>
+          <body onload="window.print(); window.close();">
+            <div class="ticket-container">
+              <h1 class="shop-name">${shopName}</h1>
+              <div class="table-label">${tableLabel}</div>
+              <div class="qr-wrapper">
+                ${svgString}
+              </div>
+              <p class="instruction">${englishInstruction}</p>
+              <p class="instruction" style="font-size: 15px; font-weight: 700; color: #475569;">${hindiInstruction}</p>
+              <p class="sub-instruction">Instant digital menu, KOT ordering & waiter call system.</p>
+              <div class="footer-tag">Powered by DukaanQR</div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to print QR code.');
+    }
+  };
+
+  const shareOnWhatsApp = () => {
+    const text = encodeURIComponent(`Check out our digital menu at ${owner?.shop_name || 'our shop'}! View items and order directly: ${url}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
+  const shareOnInstagram = () => {
+    navigator.clipboard.writeText(url);
+    toast.success('Menu link copied! Paste it in your Instagram bio link 📸', { duration: 4000 });
+  };
+
+  const printTableTent = () => {
+    const svgElement = document.querySelector('#qr-code-container svg');
+    if (!svgElement) {
+      toast.error('QR code not found.');
+      return;
+    }
+
+    try {
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const printWindow = window.open('', '_blank', 'width=1000,height=800');
+      if (!printWindow) {
+        toast.error('Pop-up blocked! Please allow popups to print.');
+        return;
+      }
+
+      const shopName = owner?.shop_name || 'Our Shop';
+      const tableLabel = selectedTable > 0 ? `TABLE ${selectedTable}` : 'MAIN MENU';
+      const hindiInstruction = 'स्कैन करें और ऑर्डर करें';
+      const englishInstruction = 'Scan to view menu & order';
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Foldable Table Tent - ${shopName}</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                background: #ffffff;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 95vh;
+              }
+              .tent-container {
+                width: 750px;
+                border: 2px dashed #94a3b8;
+                padding: 10px;
+                background: #fafafa;
+                display: flex;
+                flex-direction: column;
+              }
+              .fold-line {
+                border-top: 2px dashed #dc2626;
+                position: relative;
+                margin: 20px 0;
+                text-align: center;
+              }
+              .fold-line span {
+                background: #fafafa;
+                padding: 2px 10px;
+                color: #dc2626;
+                font-size: 10px;
+                font-weight: bold;
+                position: relative;
+                top: -8px;
+                text-transform: uppercase;
+              }
+              .panel {
+                padding: 40px;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+              }
+              .panel.side-a {
+                transform: rotate(180deg);
+              }
+              .shop-name {
+                font-size: 24px;
+                font-weight: 900;
+                text-transform: uppercase;
+                margin: 0 0 5px 0;
+                color: #0c0d13;
+              }
+              .table-label {
+                font-size: 12px;
+                font-weight: 700;
+                background: #00e5a0;
+                color: #0c0d13;
+                padding: 4px 12px;
+                border-radius: 50px;
+                text-transform: uppercase;
+                display: inline-block;
+                margin-bottom: 15px;
+              }
+              .qr-wrapper {
+                margin-bottom: 15px;
+              }
+              .qr-wrapper svg {
+                width: 180px;
+                height: 180px;
+                border: 1px solid #e2e8f0;
+                padding: 8px;
+                border-radius: 12px;
+              }
+              .instruction {
+                font-size: 14px;
+                font-weight: 800;
+                margin: 5px 0;
+              }
+              .footer-tag {
+                font-size: 8px;
+                color: #94a3b8;
+                margin-top: 15px;
+              }
+              @media print {
+                body { background: white; padding: 0; }
+                .tent-container { border: 2px dashed #000; background: white; width: 100%; }
+                .fold-line span { background: white; }
+                .panel { border: 1px solid #ccc; }
+              }
+            </style>
+          </head>
+          <body onload="window.print(); window.close();">
+            <div class="tent-container">
+              <div class="panel side-a">
+                <h1 class="shop-name">${shopName}</h1>
+                <div class="table-label">${tableLabel}</div>
+                <div class="qr-wrapper">
+                  ${svgString}
+                </div>
+                <p class="instruction">${englishInstruction}</p>
+                <p class="instruction" style="font-size: 13px; color: #475569;">${hindiInstruction}</p>
+                <div class="footer-tag">Powered by DukaanQR</div>
+              </div>
+
+              <div class="fold-line">
+                <span>▲ Fold Here / यहाँ से मोड़ें ▲</span>
+              </div>
+
+              <div class="panel side-b">
+                <h1 class="shop-name">${shopName}</h1>
+                <div class="table-label">${tableLabel}</div>
+                <div class="qr-wrapper">
+                  ${svgString}
+                </div>
+                <p class="instruction">${englishInstruction}</p>
+                <p class="instruction" style="font-size: 13px; color: #475569;">${hindiInstruction}</p>
+                <div class="footer-tag">Powered by DukaanQR</div>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate table tent.');
+    }
+  };
 
   if (!data) {
     return <div className="flex items-center justify-center min-h-[300px]">{t.loadingQr}</div>;
@@ -92,7 +419,7 @@ export default function QrPage() {
           </Badge>
 
           {/* Real QR Code */}
-          <div className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center p-4 my-6 shadow-[0_0_60px_rgba(0,229,160,0.2)] relative">
+          <div id="qr-code-container" className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center p-4 my-6 shadow-[0_0_60px_rgba(0,229,160,0.2)] relative">
             {owner?.shop_slug ? (
               <QRCodeSVG value={url} size={192} fgColor="#0c0d13" bgColor="#ffffff" includeMargin />
             ) : (
@@ -100,12 +427,19 @@ export default function QrPage() {
             )}
           </div>
 
+          {/* Hidden Canvas for PNG Downloads */}
+          {owner?.shop_slug && (
+            <div id="qr-code-canvas-container" style={{ display: 'none' }}>
+              <QRCodeCanvas value={url} size={1000} fgColor="#0c0d13" bgColor="#ffffff" includeMargin />
+            </div>
+          )}
+
           <p className="text-xs text-muted mb-1">{t.generatedQrUrl}</p>
           <p className="text-accent text-sm font-medium mb-6 break-all">{url}</p>
 
           <div className="flex gap-3 flex-wrap justify-center w-full">
-            <Button size="sm" className="w-full sm:w-auto" onClick={() => toast.success('QR Downloaded! 🎉')}>{t.downloadPng}</Button>
-            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => toast.success('PDF ready! 🖨️')}>{t.printPdf}</Button>
+            <Button size="sm" className="w-full sm:w-auto" onClick={downloadQrPng}>{t.downloadPng}</Button>
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={printQrPdf}>{t.printPdf}</Button>
             <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => handleCopy(url)}>{t.copyLinkBtn}</Button>
           </div>
         </div>
@@ -122,10 +456,10 @@ export default function QrPage() {
             <h3 className="font-display font-bold mb-4">{t.shareMenuTitle}</h3>
             <div className="space-y-2">
               {[
-                { icon: '📱', label: t.shareWhatsapp, action: () => toast.success('Opening WhatsApp... 📱') },
+                { icon: '📱', label: t.shareWhatsapp, action: shareOnWhatsApp },
                 { icon: '📋', label: t.copyMenuLinkBtn,    action: () => handleCopy(url) },
-                { icon: '📸', label: t.shareInstagramBtn,action: () => toast.success('Link copied for Instagram!') },
-                { icon: '🖨️', label: t.downloadTableTentBtn,action: () => toast.success('Table tent downloading...') },
+                { icon: '📸', label: t.shareInstagramBtn,action: shareOnInstagram },
+                { icon: '🖨️', label: t.downloadTableTentBtn,action: printTableTent },
               ].map((s) => (
                 <button
                    key={s.label}
