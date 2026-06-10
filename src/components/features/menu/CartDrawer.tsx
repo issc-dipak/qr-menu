@@ -70,7 +70,7 @@ export function CartDrawer({
 
   const finalTotal = Math.max(0, getTotal() - discount);
 
-  const handleCashOrder = () => {
+  const handleCashOrder = async () => {
     if (items.length === 0) return;
     if (!tableNumber.trim()) {
       toast.error(selectedLang === 'en' ? 'Please enter a Table Number.' : 'कृपया टेबल नंबर दर्ज करें।');
@@ -79,31 +79,30 @@ export function CartDrawer({
 
     const toastId = toast.loading(selectedLang === 'en' ? 'Placing cash order...' : 'नकद आर्डर भेजा जा रहा है...');
 
-    setTimeout(() => {
-      // Create new order in localStorage for owner
-      const storedOrders = JSON.parse(localStorage.getItem('owner-orders-history') || '[]');
-      const newOrder = {
-        id: `ORD-${Math.floor(100 + Math.random() * 900)}`,
-        table: `Table ${tableNumber || 'N/A'}`,
+    try {
+      const order = await useCartStore.getState().createOrder({
+        table: `Table ${tableNumber.trim()}`,
         items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
-        instructions: instructions.trim() || null,
         total: finalTotal,
-        date: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        status: 'pending',
-        paymentStatus: 'unpaid'
-      };
-      localStorage.setItem('owner-orders-history', JSON.stringify([newOrder, ...storedOrders]));
+        paymentMethod: 'cash',
+        instructions: instructions.trim() || null,
+      });
 
-      toast.success(
-        selectedLang === 'en' 
-          ? 'Order placed! Please pay cash at the counter. 🎉' 
-          : 'आर्डर दर्ज हो गया! कृपया काउंटर पर नकद भुगतान करें। 🎉', 
-        { id: toastId }
-      );
-      
-      clearCart();
-      onClose();
-    }, 1000);
+      if (order) {
+        toast.success(
+          selectedLang === 'en' 
+            ? 'Order placed! Please pay cash at the counter. 🎉' 
+            : 'आर्डर दर्ज हो गया! कृपया काउंटर पर नकद भुगतान करें। 🎉', 
+          { id: toastId }
+        );
+        onClose();
+      } else {
+        toast.dismiss(toastId);
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error('Failed to place cash order:', error);
+    }
   };
 
 
@@ -333,25 +332,22 @@ export function CartDrawer({
                         name: 'QR-Menu Checkout',
                         description: `Order Payment for Table ${tableNumber || 'N/A'}`,
                         order_id: orderData.id,
-                        handler: function (response: any) {
+                        handler: async function (response: any) {
                           toast.success(`Payment Successful! ID: ${response.razorpay_payment_id} 🎉`);
                           
-                          // Set local payment success flag to tell owner
-                          const storedOrders = JSON.parse(localStorage.getItem('owner-orders-history') || '[]');
-                          const newOrder = {
-                            id: `ORD-${Math.floor(100 + Math.random() * 900)}`,
-                            table: `Table ${tableNumber || 'N/A'}`,
-                            items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
-                            instructions: instructions.trim() || null,
-                            total: finalTotal,
-                            date: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                            status: 'pending',
-                            paymentStatus: 'paid'
-                          };
-                          localStorage.setItem('owner-orders-history', JSON.stringify([newOrder, ...storedOrders]));
-
-                          clearCart();
-                          onClose();
+                          try {
+                             await useCartStore.getState().createOrder({
+                               table: `Table ${tableNumber.trim()}`,
+                               items: items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+                               total: finalTotal,
+                               paymentId: response.razorpay_payment_id,
+                               paymentMethod: 'online',
+                               instructions: instructions.trim() || null,
+                             });
+                             onClose();
+                           } catch (err) {
+                             console.error('Failed to create online order:', err);
+                           }
                         },
                         prefill: {
                           name: 'Guest Customer',

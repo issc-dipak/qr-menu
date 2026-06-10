@@ -78,22 +78,24 @@ export default function HomePage() {
       {/* ── HOW IT WORKS ── */}
       <section id="how" className="max-w-5xl mx-auto px-4 py-16 md:py-24">
         <span className="section-tag">How It Works</span>
-        <h2 className="font-display font-black text-3xl md:text-5xl mb-3">Three Steps. That&apos;s All.</h2>
+        <h2 className="font-display font-black text-3xl md:text-5xl mb-3">Simple &amp; Seamless Lifecycle</h2>
         <p className="text-muted text-sm md:text-base max-w-md leading-relaxed font-light mb-10 md:mb-14">
-          No tech knowledge needed. If you can use WhatsApp, you can use QR-Menu.
+          From printing QR codes to receiving real-time orders, here is how the magic happens.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            {n:'01',icon:'📝',title:'Add Your Items',desc:'Type menu items, prices, and upload photos in minutes.'},
-            {n:'02',icon:'🔳',title:'Get Your QR Code',desc:'We generate a unique QR code for your shop instantly.'},
-            {n:'03',icon:'📱',title:'Customers Scan & See',desc:'Customers scan and your beautiful menu opens on their phone.'},
-            {n:'04',icon:'✏️',title:'Update Anytime',desc:'Changed a price? Update in 1 click — no reprinting.'},
+            {n:'01',icon:'📝',title:'Setup Your Menu',desc:'Quickly type menu items, set prices, add Veg/Non-Veg tags, and upload mouth-watering photos.'},
+            {n:'02',icon:'🔳',title:'Print Table QR Codes',desc:'Download custom QR codes mapped to your tables or counters. Place them on tables for instant scanning.'},
+            {n:'03',icon:'🔒',title:'Scan & Secure Session',desc:'Customers scan QR to start a private 24-hour session. Carts and orders stay completely isolated.'},
+            {n:'04',icon:'🛎️',title:'Ordering & Waiter Call',desc:'Customers add items to cart, place orders instantly, or call the waiter directly with a single click.'},
+            {n:'05',icon:'🔔',title:'Live Alerts & Chimes',desc:'Get real-time sound notifications on your dashboard when orders come in. Customers see live status updates.'},
+            {n:'06',icon:'📊',title:'Track Table Analytics',desc:'Monitor active sessions, order conversion, popular dishes, and overall revenue from your panel.'},
           ].map((step) => (
-            <div key={step.n} className="bg-surface border border-border rounded-card p-5 md:p-6 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+            <div key={step.n} className="bg-surface border border-border rounded-card p-6 md:p-8 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <p className="font-display font-black text-4xl md:text-5xl text-accent/10 leading-none mb-3">{step.n}</p>
               <p className="text-2xl md:text-3xl mb-3">{step.icon}</p>
-              <h3 className="font-display font-bold text-sm md:text-base mb-2">{step.title}</h3>
+              <h3 className="font-display font-bold text-base md:text-lg mb-2">{step.title}</h3>
               <p className="text-muted text-xs md:text-sm leading-relaxed">{step.desc}</p>
             </div>
           ))}
@@ -107,12 +109,15 @@ export default function HomePage() {
           <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Everything You Need.<br />Nothing You Don&apos;t.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
             {[
-              {icon:'🔳',bg:'bg-accent/10',title:'Instant QR Code',desc:'Get a unique QR the moment you sign up. Print it or share on WhatsApp.'},
-              {icon:'📱',bg:'bg-accent-2/10',title:'Mobile-First Design',desc:'Your menu looks perfect on every phone. No app download needed.'},
-              {icon:'✏️',bg:'bg-accent-3/10',title:'Real-Time Updates',desc:'Change price, add items — updates instantly. No reprinting ever.'},
-              {icon:'📊',bg:'bg-gold/10',title:'Scan Analytics',desc:'See how many people scanned today, this week, this month.'},
-              {icon:'🖼️',bg:'bg-accent/10',title:'Photo Upload',desc:'Add photos to items — menus with photos get 3x more engagement.'},
-              {icon:'🔗',bg:'bg-accent-2/10',title:'Shareable Link',desc:'Get a link to share on WhatsApp, Instagram bio, or Google Business.'},
+              {icon:'🔳',bg:'bg-accent/10',title:'Instant QR Code',desc:'Get unique QR codes for your shop or individual tables automatically on signup.'},
+              {icon:'📱',bg:'bg-accent-2/10',title:'Mobile-First Design',desc:'Beautiful, responsive digital menu page that loads instantly in any browser. No app install.'},
+              {icon:'✏️',bg:'bg-accent-3/10',title:'Real-Time Price Sync',desc:'Update prices, mark items as out of stock, or apply discounts. Changes reflect instantly.'},
+              {icon:'🔒',bg:'bg-purple-500/10',title:'Isolated Sessions',desc:'Secure 24-hour session per customer scan. Ensures private carts and order histories.'},
+              {icon:'🔔',bg:'bg-gold/10',title:'Live Alerts & Sounds',desc:'Real-time push orders with auditory bell notifications on dashboard, and live status chimes for customers.'},
+              {icon:'🛎️',bg:'bg-rose-500/10',title:'Waiter Calling System',desc:'Let customers request service or call the waiter to their exact table number with one simple click.'},
+              {icon:'📊',bg:'bg-accent/10',title:'Scan & Session Funnel',desc:'Deep dive into table engagement, conversion rates, busy hours, and average user session duration.'},
+              {icon:'🖼️',bg:'bg-accent-2/10',title:'Photo & Veg/Non-Veg Tags',desc:'Add engaging food photos and color-coded tags (Veg/Non-Veg/Best Seller) to increase checkouts.'},
+              {icon:'🔗',bg:'bg-accent-3/10',title:'Social Bio Link',desc:'Get a permanent link to share on WhatsApp Business status, Instagram bio, or Google Maps.'},
             ].map((f) => (
               <div key={f.title} className="bg-surface p-6 md:p-8 hover:bg-surface-2 transition-colors">
                 <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl ${f.bg} flex items-center justify-center text-lg md:text-xl mb-4 md:mb-5`}>{f.icon}</div>

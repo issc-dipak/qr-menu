@@ -88,3 +88,96 @@ export async function getPeakHours(ownerId: string) {
     { label: 'Other',    percentage: Math.round((buckets.other    / total) * 100) },
   ];
 }
+
+/**
+ * Inserts or updates the session record in Supabase to track visitor entry
+ */
+export async function recordSessionStart(
+  sessionId: string,
+  shopSlug: string,
+  ownerId: string,
+  deviceInfo?: string,
+  ipHash?: string
+): Promise<void> {
+  try {
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await (supabase as any).from('sessions').upsert({
+      session_id: sessionId,
+      owner_id: ownerId,
+      shop_slug: shopSlug,
+      expires_at: expiresAt,
+      device_info: deviceInfo || (typeof navigator !== 'undefined' ? navigator.userAgent : null),
+      ip_hash: ipHash || null,
+    }, { onConflict: 'session_id' });
+  } catch (error) {
+    console.error('Failed to record session start:', error);
+  }
+}
+
+/**
+ * Increments the page/item views counter for the active session
+ */
+export async function recordItemViewed(sessionId: string): Promise<void> {
+  try {
+    await (supabase as any).rpc('increment_session_views', { p_session_id: sessionId });
+  } catch (error) {
+    console.error('Failed to record item view:', error);
+  }
+}
+
+/**
+ * Increments the cart additions counter for the active session
+ */
+export async function recordAddToCart(sessionId: string): Promise<void> {
+  try {
+    await (supabase as any).rpc('increment_session_cart_adds', { p_session_id: sessionId });
+  } catch (error) {
+    console.error('Failed to record cart addition:', error);
+  }
+}
+
+/**
+ * Marks session as having placed an order and adds to session total revenue
+ */
+export async function recordCheckout(sessionId: string, total: number): Promise<void> {
+  try {
+    await (supabase as any).rpc('record_session_checkout', { p_session_id: sessionId, p_amount: total });
+  } catch (error) {
+    console.error('Failed to record checkout:', error);
+  }
+}
+
+/**
+ * Fetches metrics for a single session
+ */
+export async function getSessionMetrics(sessionId: string) {
+  const { data, error } = await (supabase as any)
+    .from('sessions')
+    .select('*')
+    .eq('session_id', sessionId)
+    .single();
+
+  if (error) {
+    console.error('Failed to fetch session metrics:', error);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Fetches all session metrics for a shop to display in the owner dashboard
+ */
+export async function getShopSessionAnalytics(ownerId: string) {
+  const { data, error } = await (supabase as any)
+    .from('sessions')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch shop session analytics:', error);
+    return [];
+  }
+  return data;
+}
+

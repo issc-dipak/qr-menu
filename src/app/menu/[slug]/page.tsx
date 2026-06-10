@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getOwnerBySlug } from '@/services/ownerService';
 import { getPublicMenuItems } from '@/services/menuService';
-import { recordScan } from '@/services/analyticsService';
+import { recordScan, recordSessionStart, recordItemViewed } from '@/services/analyticsService';
 import { cn } from '@/utils';
 import type { Owner, MenuItem } from '@/types/supabase';
 import { useCartStore } from '@/store';
@@ -66,23 +66,104 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
   useEffect(() => {
     if (ordersHistoryOpen) {
-      const stored = localStorage.getItem('owner-orders-history');
-      if (stored) {
-        setCustomerOrders(JSON.parse(stored));
-      } else {
-        setCustomerOrders([]);
-      }
+      setCustomerOrders(cart.orderHistory);
     }
-  }, [ordersHistoryOpen]);
+  }, [ordersHistoryOpen, cart.orderHistory]);
 
   useEffect(() => {
     async function load() {
       const ownerData = await getOwnerBySlug(params.slug);
       if (!ownerData) { setNotFound(true); setLoading(false); return; }
+
+      // Get sid and table from URL
+      let urlSid = null;
+      let urlTable = null;
+      if (typeof window !== 'undefined') {
+        const urlParams = new URL(window.location.href).searchParams;
+        urlSid = urlParams.get('sid');
+        urlTable = urlParams.get('table');
+      }
+
+      // Initialize session
+      const session = await cart.initializeSession(params.slug, urlSid);
+
+      // Record session start and first view in database analytics
+      await recordSessionStart(session.sessionId, params.slug, ownerData.id);
+      await recordItemViewed(session.sessionId);
+
+      if (urlTable) {
+        cart.setTableNumber(urlTable);
+        setTableInput(urlTable);
+      }
+
+      // Update URL with session ID
+      if (typeof window !== 'undefined') {
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.set('sid', session.sessionId);
+        if (urlTable) {
+          nextParams.set('table', urlTable);
+        }
+        const newUrl = `${window.location.pathname}?${nextParams.toString()}`;
+        window.history.replaceState(null, '', newUrl);
+      }
+
+      // Subscribe to real-time status updates of customer's orders
+      const channelName = `customer-orders-${session.sessionId}-${Math.random().toString(36).substring(2, 6)}`;
+      const orderSub = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'session_orders',
+            filter: `session_id=eq.${session.sessionId}`
+          },
+          (payload) => {
+            // Sync store order history
+            cart.syncOrderHistory();
+
+            // Play notification bell
+            try {
+              const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-200.wav');
+              audio.volume = 0.4;
+              audio.play().catch(e => console.log('Audio playback pending interaction:', e));
+            } catch (err) {
+              console.error('Audio play failed:', err);
+            }
+
+            // Toast status update
+            const updatedOrder = payload.new as any;
+            toast.success(
+              `Order accepted/status updated: ${updatedOrder.status.toUpperCase()}! 🔔`,
+              {
+                duration: 6000,
+                position: 'top-center',
+                icon: '🔔',
+              }
+            );
+          }
+        )
+        .subscribe();
+
       const [menuItems] = await Promise.all([getPublicMenuItems(ownerData.id), recordScan(ownerData.id)]);
-      setOwner(ownerData); setItems(menuItems); setLoading(false);
+      setOwner(ownerData); 
+      setItems(menuItems); 
+      setLoading(false);
+
+      return () => {
+        supabase.removeChannel(orderSub);
+      };
     }
-    load();
+    const cleanUpFnPromise = load();
+
+    return () => {
+      cleanUpFnPromise.then((cleanUp) => {
+        if (typeof cleanUp === 'function') {
+          cleanUp();
+        }
+      });
+    };
   }, [params.slug]);
 
   const categories = Array.from(new Set(items.map((i) => i.category)));
@@ -131,12 +212,14 @@ export default function CustomerMenuPage({ params }: PageProps) {
           {owner.shop_address && <p className="text-[10px] text-accent/50 truncate">{owner.shop_address}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setWaiterModalOpen(true)}
-            className="text-xs bg-gold/10 border border-gold/20 text-gold px-3 py-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
-          >
-            🛎️ Call Waiter
-          </button>
+          {owner?.plan === 'business' && (
+            <button
+              onClick={() => setWaiterModalOpen(true)}
+              className="text-xs bg-gold/10 border border-gold/20 text-gold px-3 py-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
+            >
+              🛎️ Call Waiter
+            </button>
+          )}
           <button
             onClick={() => setOrdersHistoryOpen(true)}
             className="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"

@@ -8,6 +8,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { useAuthStore } from '@/store';
 import { supabase } from '@/lib/supabase';
 import type { WaiterCall } from '@/types/supabase';
+import { getShopOrders, updateOrderStatus } from '@/services/orderService';
 
 interface OrderRecord {
   id: string;
@@ -212,7 +213,7 @@ export default function OrdersHistoryPage() {
   };
 
   useEffect(() => {
-    if (!owner?.id) return;
+    if (!owner?.id || owner.plan !== 'business') return;
 
     // Fetch existing pending calls
     const fetchPendingCalls = async () => {
@@ -280,26 +281,60 @@ export default function OrdersHistoryPage() {
   }, [owner?.id]);
 
   useEffect(() => {
-    // One-time reset to clear all previous test/mock data from localStorage
-    if (!localStorage.getItem('orders-cleaned-v2')) {
-      localStorage.removeItem('owner-orders-history');
-      localStorage.setItem('orders-cleaned-v2', 'true');
-    }
+    if (!owner?.id) return;
 
-    // Load from localstorage to make it dynamic
-    const local = localStorage.getItem('owner-orders-history');
-    if (local) {
-      const parsed = JSON.parse(local);
-      // Filter out mock and old test order IDs (including ORD-242)
-      const filtered = parsed.filter((o: OrderRecord) =>
-        !['ORD-101', 'ORD-102', 'ORD-103', 'ORD-104', 'ORD-105', 'ORD-106', 'ORD-242'].includes(o.id)
-      );
-      setOrders(filtered);
-      localStorage.setItem('owner-orders-history', JSON.stringify(filtered));
-    } else {
-      setOrders([]);
-    }
-  }, []);
+    const loadOrders = async () => {
+      try {
+        const dbOrders = await getShopOrders(owner.id);
+        const mapped: OrderRecord[] = dbOrders.map((o: any) => ({
+          id: o.id,
+          table: o.delivery_address || 'Takeaway',
+          items: typeof o.items === 'string' ? o.items : 
+                 Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
+          total: Number(o.total),
+          date: new Date(o.created_at).toLocaleString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          }),
+          status: o.status as 'pending' | 'completed' | 'cancelled',
+          paymentStatus: o.payment_id ? 'paid' : 'unpaid',
+          instructions: null
+        }));
+        setOrders(mapped);
+      } catch (err) {
+        console.error('Error loading database orders:', err);
+      }
+    };
+
+    loadOrders();
+
+    // Subscribe to real-time additions and updates of session_orders
+    const ordersChannel = supabase
+      .channel(`session-orders-owner-${owner.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'session_orders'
+        },
+        async (payload) => {
+          await loadOrders();
+
+          if (payload.eventType === 'INSERT') {
+            playNotificationSound();
+            toast.success(`🎉 New Order Received!`, {
+              duration: 6000,
+              position: 'top-right',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+    };
+  }, [owner?.id]);
 
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'yesterday' | 'month' | 'year'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
@@ -384,11 +419,33 @@ export default function OrdersHistoryPage() {
     pendingOrders: dateFilteredOrders.filter((o) => o.status === 'pending').length,
   };
 
-  const toggleStatus = (id: string, newStatus: 'completed' | 'cancelled') => {
-    const updated = orders.map(o => o.id === id ? { ...o, status: newStatus, paymentStatus: newStatus === 'completed' ? 'paid' : o.paymentStatus } : o);
-    setOrders(updated);
-    localStorage.setItem('owner-orders-history', JSON.stringify(updated));
-    toast.success(`Order status updated to ${newStatus}! 🎉`);
+  const toggleStatus = async (id: string, newStatus: 'completed' | 'cancelled') => {
+    const toastId = toast.loading('Updating order status...');
+    try {
+      await updateOrderStatus(id, newStatus);
+      toast.success(`Order status updated to ${newStatus}! 🎉`, { id: toastId });
+      
+      // Reload orders from the database
+      if (owner?.id) {
+        const dbOrders = await getShopOrders(owner.id);
+        const mapped: OrderRecord[] = dbOrders.map((o: any) => ({
+          id: o.id,
+          table: o.delivery_address || 'Takeaway',
+          items: typeof o.items === 'string' ? o.items : 
+                 Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
+          total: Number(o.total),
+          date: new Date(o.created_at).toLocaleString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          }),
+          status: o.status as 'pending' | 'completed' | 'cancelled',
+          paymentStatus: o.payment_id ? 'paid' : 'unpaid',
+          instructions: null
+        }));
+        setOrders(mapped);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update order status', { id: toastId });
+    }
   };
 
   const exportToCSV = () => {

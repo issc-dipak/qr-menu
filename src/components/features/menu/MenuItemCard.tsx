@@ -31,19 +31,19 @@ export function MenuItemCard({ item, onEdit, onDelete }: MenuItemCardProps) {
       <div className="p-4">
         <div className="flex items-start justify-between mb-1 gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span 
-              className="w-3.5 h-3.5 border flex items-center justify-center flex-shrink-0" 
-              style={{ 
+            <span
+              className="w-3.5 h-3.5 border flex items-center justify-center flex-shrink-0"
+              style={{
                 borderColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335',
                 padding: '1px'
               }}
               title={(item as any).is_veg !== false ? 'Veg' : 'Non-Veg'}
             >
-              <span 
-                className="w-1.5 h-1.5 rounded-full" 
-                style={{ 
-                  backgroundColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335' 
-                }} 
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335'
+                }}
               />
             </span>
             <h3 className="font-semibold text-sm truncate">{item.name}</h3>
