@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { MenuItemCard } from '@/components/features/menu/MenuItemCard';
 import { MenuItemForm } from '@/components/features/menu/MenuItemForm';
 import { useMenu } from '@/hooks';
+import { useTranslation } from '@/hooks/useTranslation';
 import { MENU_CATEGORIES } from '@/constants';
 import { cn } from '@/utils';
 import { useMenuStore } from '@/store';
@@ -15,6 +16,7 @@ export default function MenuPage() {
     handleAdd, handleUpdate, handleDelete,
     openEdit, openAdd, closeModal,
   } = useMenu();
+  const { t } = useTranslation('owner');
 
   const rawItems = useMenuStore((state) => state.items);
   const dynamicCategories = Array.from(
@@ -33,10 +35,10 @@ export default function MenuPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-2xl">Menu Items</h1>
-          <p className="text-muted text-sm mt-1">{totalItems} items in your menu</p>
+          <h1 className="font-display font-black text-2xl">{t.menuPageTitle}</h1>
+          <p className="text-muted text-sm mt-1">{totalItems} {t.menuPageSubtitle}</p>
         </div>
-        <Button size="sm" onClick={openAdd}>+ Add Item</Button>
+        <Button size="sm" onClick={openAdd}>{t.addItem}</Button>
       </div>
 
       {/* Controls */}
@@ -46,7 +48,7 @@ export default function MenuPage() {
           <span className="text-muted text-sm">🔍</span>
           <input
             className="bg-transparent outline-none text-sm flex-1 text-[#f0f0f5] placeholder:text-muted"
-            placeholder="Search items..."
+            placeholder={t.searchItems}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -65,7 +67,7 @@ export default function MenuPage() {
                   : 'bg-transparent border-border text-muted hover:border-[#f0f0f5]/30 hover:text-[#f0f0f5]'
               )}
             >
-              {cat === 'all' ? 'All' : cat}
+              {cat === 'all' ? t.all : cat}
             </button>
           ))}
         </div>

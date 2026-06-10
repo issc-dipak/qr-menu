@@ -1,9 +1,14 @@
+'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { PLANS } from '@/constants';
-import { formatCurrency } from '@/utils';
+import { formatCurrency, cn } from '@/utils';
+import { PhoneMockup } from '@/components/ui/PhoneMockup';
 
 export default function HomePage() {
+  const [shopName, setShopName] = useState('Dipak Chai Corner');
+  const [themeColor, setThemeColor] = useState('#00e5a0');
   return (
     <>
       <Navbar />
@@ -27,35 +32,72 @@ export default function HomePage() {
           No printing. No hassle. Create a beautiful QR menu — customers scan and see everything instantly.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16 md:mb-20 w-full max-w-sm sm:max-w-none">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 w-full max-w-sm sm:max-w-none">
           <Link href="/auth/signup" className="btn-primary text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl shadow-glow no-underline justify-center">
             Start Free — No Credit Card 🚀
           </Link>
-          <Link href="/demo" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
+          <Link href="/menu/dipak-creation" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
             See Live Demo →
           </Link>
         </div>
 
-        {/* Phone Mockup */}
-        <div className="w-56 md:w-64 h-[440px] md:h-[500px] bg-surface rounded-[32px] md:rounded-[36px] border-2 border-border shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden mx-auto">
-          <div className="h-6 bg-bg rounded-b-[16px] w-[80px] mx-auto" />
-          <div className="p-2.5 space-y-2">
-            <div className="bg-gradient-to-br from-[#0d1f16] to-[#0a1a11] rounded-xl p-2.5 text-center">
-              <p className="font-display font-bold text-accent text-sm">☕ Dipak Chai Corner</p>
-              <p className="text-muted text-[10px] mt-0.5">Sector 21, Gandhinagar · Open Now</p>
+        {/* Interactive Customizer & Phone Mockup */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center mt-6 w-full max-w-4xl mx-auto">
+          {/* Customizer Panel */}
+          <div className="w-full max-w-sm p-6 bg-surface-2/30 border border-border/60 rounded-2xl shadow-xl flex flex-col gap-5 text-left backdrop-blur-sm animate-fade-up" style={{ animationDelay: '250ms' }}>
+            <div>
+              <p className="text-accent text-xs font-bold tracking-wider uppercase mb-1" style={{ color: themeColor }}>
+                ⚡ Try it Live
+              </p>
+              <h3 className="font-display font-bold text-lg text-white">Customize Your Menu</h3>
+              <p className="text-muted text-xs leading-relaxed mt-1">See how your digital menu will look to your customers instantly. Type your cafe name or change colors!</p>
             </div>
-            {[
-              {e:'🍵',n:'Masala Chai',p:'₹20'},
-              {e:'☕',n:'Filter Coffee',p:'₹30'},
-              {e:'🧋',n:'Cold Coffee',p:'₹60'},
-              {e:'🥐',n:'Butter Toast',p:'₹25'},
-            ].map((item) => (
-              <div key={item.n} className="flex items-center gap-2 bg-surface-2 border border-border rounded-lg p-2">
-                <span className="text-xl">{item.e}</span>
-                <div className="flex-1 min-w-0"><p className="text-xs font-semibold truncate">{item.n}</p></div>
-                <span className="text-xs font-bold text-accent flex-shrink-0">{item.p}</span>
+            
+            <div className="h-px bg-border/40" />
+
+            {/* Shop Name Input */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Cafe / Shop Name</label>
+              <input
+                type="text"
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value || 'Dipak Chai Corner')}
+                placeholder="e.g. Dipak Chai Corner"
+                maxLength={22}
+                className="bg-surface-2 border border-border text-white text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-all focus:border-accent"
+                style={{ borderColor: themeColor }}
+              />
+            </div>
+
+            {/* Color Selector */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Brand Theme Color</label>
+              <div className="flex gap-2.5 items-center mt-1">
+                {[
+                  { name: 'Emerald', hex: '#00e5a0' },
+                  { name: 'Warm Gold', hex: '#f59e0b' },
+                  { name: 'Spicy Red', hex: '#ef4444' },
+                  { name: 'Lounge Blue', hex: '#3b82f6' },
+                  { name: 'Amethyst Purple', hex: '#8b5cf6' },
+                ].map((color) => (
+                  <button
+                    key={color.hex}
+                    onClick={() => setThemeColor(color.hex)}
+                    className={cn(
+                      "w-7 h-7 rounded-full border transition-all cursor-pointer relative",
+                      themeColor === color.hex ? "border-white scale-110 shadow-glow" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                    )}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  />
+                ))}
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Phone Mockup */}
+          <div className="flex-shrink-0 animate-fade-up" style={{ animationDelay: '350ms' }}>
+            <PhoneMockup shopName={shopName} themeColor={themeColor} />
           </div>
         </div>
       </section>
@@ -63,10 +105,10 @@ export default function HomePage() {
       {/* ── STATS ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border-y border-border bg-surface">
         {[
-          {n:'5 Cr+',l:'Small Businesses in India'},
-          {n:'5 Min',l:'Setup Time'},
-          {n:'₹0',l:'To Get Started'},
-          {n:'5',l:'Shops Already Using'},
+          { n: '5 Cr+', l: 'Small Businesses in India' },
+          { n: '5 Min', l: 'Setup Time' },
+          { n: '₹0', l: 'To Get Started' },
+          { n: '5', l: 'Shops Already Using' },
         ].map((s) => (
           <div key={s.l} className="text-center py-6 px-3 bg-surface">
             <p className="font-display font-black text-2xl md:text-3xl gradient-text">{s.n}</p>
@@ -84,12 +126,12 @@ export default function HomePage() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            {n:'01',icon:'📝',title:'Setup Your Menu',desc:'Quickly type menu items, set prices, add Veg/Non-Veg tags, and upload mouth-watering photos.'},
-            {n:'02',icon:'🔳',title:'Print Table QR Codes',desc:'Download custom QR codes mapped to your tables or counters. Place them on tables for instant scanning.'},
-            {n:'03',icon:'🔒',title:'Scan & Secure Session',desc:'Customers scan QR to start a private 24-hour session. Carts and orders stay completely isolated.'},
-            {n:'04',icon:'🛎️',title:'Ordering & Waiter Call',desc:'Customers add items to cart, place orders instantly, or call the waiter directly with a single click.'},
-            {n:'05',icon:'🔔',title:'Live Alerts & Chimes',desc:'Get real-time sound notifications on your dashboard when orders come in. Customers see live status updates.'},
-            {n:'06',icon:'📊',title:'Track Table Analytics',desc:'Monitor active sessions, order conversion, popular dishes, and overall revenue from your panel.'},
+            { n: '01', icon: '📝', title: 'Setup Your Menu', desc: 'Quickly type menu items, set prices, add Veg/Non-Veg tags, and upload mouth-watering photos.' },
+            { n: '02', icon: '🔳', title: 'Print Table QR Codes', desc: 'Download custom QR codes mapped to your tables or counters. Place them on tables for instant scanning.' },
+            { n: '03', icon: '🔒', title: 'Scan & Secure Session', desc: 'Customers scan QR to start a private 24-hour session. Carts and orders stay completely isolated.' },
+            { n: '04', icon: '🛎️', title: 'Ordering & Waiter Call', desc: 'Customers add items to cart, place orders instantly, or call the waiter directly with a single click.' },
+            { n: '05', icon: '🔔', title: 'Live Alerts & Chimes', desc: 'Get real-time sound notifications on your dashboard when orders come in. Customers see live status updates.' },
+            { n: '06', icon: '📊', title: 'Track Table Analytics', desc: 'Monitor active sessions, order conversion, popular dishes, and overall revenue from your panel.' },
           ].map((step) => (
             <div key={step.n} className="bg-surface border border-border rounded-card p-6 md:p-8 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -109,15 +151,15 @@ export default function HomePage() {
           <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Everything You Need.<br />Nothing You Don&apos;t.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
             {[
-              {icon:'🔳',bg:'bg-accent/10',title:'Instant QR Code',desc:'Get unique QR codes for your shop or individual tables automatically on signup.'},
-              {icon:'📱',bg:'bg-accent-2/10',title:'Mobile-First Design',desc:'Beautiful, responsive digital menu page that loads instantly in any browser. No app install.'},
-              {icon:'✏️',bg:'bg-accent-3/10',title:'Real-Time Price Sync',desc:'Update prices, mark items as out of stock, or apply discounts. Changes reflect instantly.'},
-              {icon:'🔒',bg:'bg-purple-500/10',title:'Isolated Sessions',desc:'Secure 24-hour session per customer scan. Ensures private carts and order histories.'},
-              {icon:'🔔',bg:'bg-gold/10',title:'Live Alerts & Sounds',desc:'Real-time push orders with auditory bell notifications on dashboard, and live status chimes for customers.'},
-              {icon:'🛎️',bg:'bg-rose-500/10',title:'Waiter Calling System',desc:'Let customers request service or call the waiter to their exact table number with one simple click.'},
-              {icon:'📊',bg:'bg-accent/10',title:'Scan & Session Funnel',desc:'Deep dive into table engagement, conversion rates, busy hours, and average user session duration.'},
-              {icon:'🖼️',bg:'bg-accent-2/10',title:'Photo & Veg/Non-Veg Tags',desc:'Add engaging food photos and color-coded tags (Veg/Non-Veg/Best Seller) to increase checkouts.'},
-              {icon:'🔗',bg:'bg-accent-3/10',title:'Social Bio Link',desc:'Get a permanent link to share on WhatsApp Business status, Instagram bio, or Google Maps.'},
+              { icon: '🔳', bg: 'bg-accent/10', title: 'Instant QR Code', desc: 'Get unique QR codes for your shop or individual tables automatically on signup.' },
+              { icon: '📱', bg: 'bg-accent-2/10', title: 'Mobile-First Design', desc: 'Beautiful, responsive digital menu page that loads instantly in any browser. No app install.' },
+              { icon: '✏️', bg: 'bg-accent-3/10', title: 'Real-Time Price Sync', desc: 'Update prices, mark items as out of stock, or apply discounts. Changes reflect instantly.' },
+              { icon: '🔒', bg: 'bg-purple-500/10', title: 'Isolated Sessions', desc: 'Secure 24-hour session per customer scan. Ensures private carts and order histories.' },
+              { icon: '🔔', bg: 'bg-gold/10', title: 'Live Alerts & Sounds', desc: 'Real-time push orders with auditory bell notifications on dashboard, and live status chimes for customers.' },
+              { icon: '🛎️', bg: 'bg-rose-500/10', title: 'Waiter Calling System', desc: 'Let customers request service or call the waiter to their exact table number with one simple click.' },
+              { icon: '📊', bg: 'bg-accent/10', title: 'Scan & Session Funnel', desc: 'Deep dive into table engagement, conversion rates, busy hours, and average user session duration.' },
+              { icon: '🖼️', bg: 'bg-accent-2/10', title: 'Photo & Veg/Non-Veg Tags', desc: 'Add engaging food photos and color-coded tags (Veg/Non-Veg/Best Seller) to increase checkouts.' },
+              { icon: '🔗', bg: 'bg-accent-3/10', title: 'Social Bio Link', desc: 'Get a permanent link to share on WhatsApp Business status, Instagram bio, or Google Maps.' },
             ].map((f) => (
               <div key={f.title} className="bg-surface p-6 md:p-8 hover:bg-surface-2 transition-colors">
                 <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl ${f.bg} flex items-center justify-center text-lg md:text-xl mb-4 md:mb-5`}>{f.icon}</div>
@@ -136,29 +178,29 @@ export default function HomePage() {
         <p className="text-muted text-sm md:text-base max-w-md font-light mb-10 md:mb-14">Start free. Upgrade when ready. Cancel anytime.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-start">
           {PLANS.map((plan) => (
-            <div key={plan.id} className={`bg-surface border rounded-card-lg p-6 md:p-8 relative transition-transform hover:-translate-y-1 ${plan.id==='pro'?'border-accent shadow-[0_0_40px_rgba(0,229,160,0.12)]':'border-border'}`}>
-              {plan.id==='pro' && (
+            <div key={plan.id} className={`bg-surface border rounded-card-lg p-6 md:p-8 relative transition-transform hover:-translate-y-1 ${plan.id === 'pro' ? 'border-accent shadow-[0_0_40px_rgba(0,229,160,0.12)]' : 'border-border'}`}>
+              {plan.id === 'pro' && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase whitespace-nowrap">
                   ⚡ Most Popular
                 </span>
               )}
               <p className="font-display font-bold mb-3">{plan.name}</p>
-              <p className={`font-display font-black text-3xl md:text-4xl leading-none mb-1 ${plan.id==='pro'?'text-accent':plan.id==='business'?'text-accent-2':''}`}>
-                {plan.price===0?'₹0':formatCurrency(plan.price)}<span className="text-sm font-normal text-muted"> / month</span>
+              <p className={`font-display font-black text-3xl md:text-4xl leading-none mb-1 ${plan.id === 'pro' ? 'text-accent' : plan.id === 'business' ? 'text-accent-2' : ''}`}>
+                {plan.price === 0 ? '₹0' : formatCurrency(plan.price)}<span className="text-sm font-normal text-muted"> / month</span>
               </p>
               <p className="text-muted text-xs md:text-sm mb-5">
-                {plan.id==='free'?'Perfect to try it out':plan.id==='pro'?'For growing businesses':'For serious businesses'}
+                {plan.id === 'free' ? 'Perfect to try it out' : plan.id === 'pro' ? 'For growing businesses' : 'For serious businesses'}
               </p>
               <hr className="border-border mb-4" />
               <ul className="space-y-2 mb-6">
                 {plan.features.map((f) => (
-                  <li key={f.label} className={`flex items-center gap-2 text-xs md:text-sm ${f.included?'text-muted':'text-muted/40'}`}>
-                    <span className={f.included?'text-accent':'text-danger'}>{f.included?'✓':'✕'}</span>{f.label}
+                  <li key={f.label} className={`flex items-center gap-2 text-xs md:text-sm ${f.included ? 'text-muted' : 'text-muted/40'}`}>
+                    <span className={f.included ? 'text-accent' : 'text-danger'}>{f.included ? '✓' : '✕'}</span>{f.label}
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/signup" className={`w-full flex items-center justify-center py-2.5 md:py-3 rounded-xl font-semibold text-sm no-underline transition-all ${plan.id==='pro'?'btn-primary shadow-glow':plan.id==='business'?'border border-accent-2 text-accent-2 hover:bg-accent-2/5':'btn-ghost'}`}>
-                {plan.id==='free'?'Get Started Free':plan.id==='pro'?'Start Pro':'Go Business'}
+              <Link href="/auth/signup" className={`w-full flex items-center justify-center py-2.5 md:py-3 rounded-xl font-semibold text-sm no-underline transition-all ${plan.id === 'pro' ? 'btn-primary shadow-glow' : plan.id === 'business' ? 'border border-accent-2 text-accent-2 hover:bg-accent-2/5' : 'btn-ghost'}`}>
+                {plan.id === 'free' ? 'Get Started Free' : plan.id === 'pro' ? 'Start Pro' : 'Go Business'}
               </Link>
             </div>
           ))}
@@ -169,7 +211,7 @@ export default function HomePage() {
       <div className="bg-surface border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
           <span className="section-tag">Testimonials</span>
-          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Dukaan Owners Love It</h2>
+          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Shop Owners Love It</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {[
               {
@@ -231,10 +273,10 @@ export default function HomePage() {
         <h2 className="font-display font-black text-3xl md:text-5xl mb-10">Questions? We Got You.</h2>
         <div className="space-y-3">
           {[
-            {q:'Do customers need to download an app?',a:'No! Customers just scan the QR with their phone camera — no app download needed. Opens directly in browser.'},
-            {q:'What if I want to change prices?',a:'Login, update the price, save. Updates instantly. Your QR code stays the same forever — no reprinting needed.'},
-            {q:'Can I use it for any type of shop?',a:'Absolutely! Restaurants, salons, boutiques, tuition centers, electricians — any business with products or services.'},
-            {q:'Is the free plan really free?',a:'Yes! Free plan is completely free — no credit card required. 10 menu items, 1 QR code, forever.'},
+            { q: 'Do customers need to download an app?', a: 'No! Customers just scan the QR with their phone camera — no app download needed. Opens directly in browser.' },
+            { q: 'What if I want to change prices?', a: 'Login, update the price, save. Updates instantly. Your QR code stays the same forever — no reprinting needed.' },
+            { q: 'Can I use it for any type of shop?', a: 'Absolutely! Restaurants, salons, boutiques, tuition centers, electricians — any business with products or services.' },
+            { q: 'Is the free plan really free?', a: 'Yes! Free plan is completely free — no credit card required. 10 menu items, 1 QR code, forever.' },
           ].map((faq) => (
             <details key={faq.q} className="border border-border rounded-xl overflow-hidden group">
               <summary className="flex items-center justify-between p-4 md:p-5 cursor-pointer bg-surface hover:bg-surface-2 transition-colors text-sm md:text-base font-medium list-none">

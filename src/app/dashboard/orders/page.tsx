@@ -6,6 +6,7 @@ import { cn } from '@/utils';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { useAuthStore } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import type { WaiterCall } from '@/types/supabase';
 import { getShopOrders, updateOrderStatus } from '@/services/orderService';
@@ -183,6 +184,7 @@ const DEFAULT_ORDERS: OrderRecord[] = [
 export default function OrdersHistoryPage() {
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const { owner } = useAuthStore();
+  const { t } = useTranslation('owner');
   const [waiterCalls, setWaiterCalls] = useState<WaiterCall[]>([]);
 
   const playNotificationSound = () => {
@@ -521,7 +523,7 @@ export default function OrdersHistoryPage() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Orders Report - ${owner?.shop_name || 'DukaanQR'}</title>
+          <title>Orders Report - ${owner?.shop_name || 'QR-Menu'}</title>
           <style>
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -685,7 +687,7 @@ export default function OrdersHistoryPage() {
           </table>
 
           <div class="footer">
-            <p>System Generated Report - DukaanQR digital menu platform.</p>
+            <p>System Generated Report - QR-Menu digital menu platform.</p>
           </div>
         </body>
       </html>
@@ -714,12 +716,12 @@ export default function OrdersHistoryPage() {
     <div>
       {/* Active Waiter Calls Alert Panel */}
       {waiterCalls.length > 0 && (
-        <div className="mb-8 p-6 bg-white/[0.03] border border-accent/25 rounded-2xl animate-fade-in backdrop-blur-md">
+        <div className="mb-8 p-4 sm:p-6 bg-white/[0.03] border border-accent/25 rounded-2xl animate-fade-in backdrop-blur-md">
           <div className="flex items-center gap-2.5 mb-4">
             <span className="text-xl animate-bounce">🛎️</span>
             <div>
-              <h2 className="font-display font-black text-base text-[#f0f0f5]">Active Waiter Calls</h2>
-              <p className="text-[11px] text-muted">Customers at the following tables are requesting service. Resolve them when done.</p>
+              <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.activeWaiterCalls}</h2>
+              <p className="text-[11px] text-muted">{t.activeWaiterCallsDesc}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -729,7 +731,7 @@ export default function OrdersHistoryPage() {
                 className="bg-surface border border-border/80 rounded-xl p-4 flex items-center justify-between shadow-lg hover:border-accent/30 transition-all"
               >
                 <div>
-                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">Table</span>
+                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">{t.table}</span>
                   <span className="font-display font-extrabold text-lg text-accent">{call.table_number}</span>
                   <span className="text-[9px] text-muted block mt-0.5">
                     {new Date(call.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
@@ -739,7 +741,7 @@ export default function OrdersHistoryPage() {
                   onClick={() => resolveWaiterCall(call.id)}
                   className="bg-accent/15 hover:bg-accent border border-accent/20 text-accent hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer"
                 >
-                  Done
+                  {t.done}
                 </button>
               </div>
             ))}
@@ -750,34 +752,34 @@ export default function OrdersHistoryPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-6">
         <div>
-          <h1 className="font-display font-black text-2xl">Orders History</h1>
-          <p className="text-muted text-sm mt-1">Track and manage all orders placed from your digital QR Menu.</p>
+          <h1 className="font-display font-black text-2xl">{t.ordersHistoryTitle}</h1>
+          <p className="text-muted text-sm mt-1">{t.ordersHistorySubtitle}</p>
         </div>
       </div>
 
       {/* Analytics, KPIs, and Charts Section */}
-      <div className="mb-8 bg-white/[0.02] border border-border/80 p-5 rounded-3xl backdrop-blur-md">
+      <div className="mb-8 bg-white/[0.02] border border-border/80 p-4 sm:p-5 rounded-3xl backdrop-blur-md w-full overflow-hidden">
         {/* Analytics Card Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/30">
           <div>
-            <h2 className="font-display font-black text-base text-[#f0f0f5]">Sales Performance</h2>
-            <p className="text-[10px] text-muted">Real-time revenue metrics and daily transaction volume.</p>
+            <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.salesPerformance}</h2>
+            <p className="text-[10px] text-muted">{t.salesPerformanceSub}</p>
           </div>
 
           {/* Date Range Select */}
-          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none">
+          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none w-full sm:w-auto">
             {([
-              { value: 'all', label: 'All Time' },
-              { value: 'today', label: 'Today' },
-              { value: 'yesterday', label: 'Yesterday' },
-              { value: 'month', label: 'This Month' },
-              { value: 'year', label: 'This Year' }
+              { value: 'all', label: t.dateAllTime },
+              { value: 'today', label: t.dateToday },
+              { value: 'yesterday', label: t.dateYesterday },
+              { value: 'month', label: t.dateThisMonth },
+              { value: 'year', label: t.dateThisYear }
             ] as const).map((f) => (
               <button
                 key={f.value}
                 onClick={() => setDateFilter(f.value)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-shrink-0',
+                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-1 sm:flex-none text-center flex-shrink-0',
                   dateFilter === f.value ? 'bg-[#f0f0f5]/10 text-[#f0f0f5]' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
                 )}
               >
@@ -788,35 +790,35 @@ export default function OrdersHistoryPage() {
         </div>
 
         {/* KPIs Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {/* Revenue Card */}
-          <div className="p-4 bg-surface border border-border/60 rounded-xl">
+          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
             <span className="text-xl">💰</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">Total Revenue</p>
-            <p className="text-lg font-display font-black text-accent mt-1" style={{ color: primaryColor }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.totalRevenue}</p>
+            <p className="text-base sm:text-lg font-display font-black text-accent mt-1 truncate" style={{ color: primaryColor }} title={`₹${stats.totalRevenue.toLocaleString('en-IN')}`}>
               ₹{stats.totalRevenue.toLocaleString('en-IN')}
             </p>
           </div>
 
           {/* Total Orders Card */}
-          <div className="p-4 bg-surface border border-border/60 rounded-xl">
+          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
             <span className="text-xl">📦</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">Total Orders</p>
-            <p className="text-lg font-display font-black text-[#f0f0f5] mt-1">{stats.totalOrders}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.totalOrdersLabel}</p>
+            <p className="text-base sm:text-lg font-display font-black text-[#f0f0f5] mt-1">{stats.totalOrders}</p>
           </div>
 
           {/* Completed Orders Card */}
-          <div className="p-4 bg-surface border border-border/60 rounded-xl">
+          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
             <span className="text-xl">✅</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">Completed</p>
-            <p className="text-lg font-display font-black text-accent mt-1" style={{ color: '#00e5a0' }}>{stats.completedOrders}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.completedLabel}</p>
+            <p className="text-base sm:text-lg font-display font-black text-accent mt-1" style={{ color: '#00e5a0' }}>{stats.completedOrders}</p>
           </div>
 
           {/* Pending Orders Card */}
-          <div className="p-4 bg-surface border border-border/60 rounded-xl">
+          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
             <span className="text-xl">🛎️</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">Pending Service</p>
-            <p className="text-lg font-display font-black text-gold mt-1">{stats.pendingOrders}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.pendingServiceLabel}</p>
+            <p className="text-base sm:text-lg font-display font-black text-gold mt-1">{stats.pendingOrders}</p>
           </div>
         </div>
 
@@ -852,11 +854,11 @@ export default function OrdersHistoryPage() {
       {/* Table & Search Header */}
       <div className="mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white/[0.01] border border-border/40 p-3.5 rounded-2xl">
         {/* Search Input */}
-        <div className="flex items-center bg-surface border border-border rounded-xl px-3.5 py-2 gap-2 flex-1 max-w-md">
+        <div className="flex items-center bg-surface border border-border rounded-xl px-3.5 py-2 gap-2 flex-1 w-full lg:max-w-md">
           <span className="text-muted text-xs">🔍</span>
           <input
             type="text"
-            placeholder="Search by Table, ID, or Items..."
+            placeholder={t.searchOrdersPlaceholder}
             className="bg-transparent outline-none text-xs flex-1 text-[#f0f0f5] placeholder:text-muted"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -872,19 +874,19 @@ export default function OrdersHistoryPage() {
         </div>
 
         {/* Filters Group */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
           {/* Payment Filter */}
-          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none">
+          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none w-full sm:w-auto">
             {([
-              { value: 'all', label: 'All Payments' },
-              { value: 'paid', label: 'Paid 💰' },
-              { value: 'unpaid', label: 'Unpaid ⏳' }
+              { value: 'all', label: t.allPayments },
+              { value: 'paid', label: t.paidFilter },
+              { value: 'unpaid', label: t.unpaidFilter }
             ] as const).map((f) => (
               <button
                 key={f.value}
                 onClick={() => setPaymentFilter(f.value)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-shrink-0',
+                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-1 sm:flex-none text-center flex-shrink-0',
                   paymentFilter === f.value ? 'bg-[#f0f0f5]/10 text-[#f0f0f5]' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
                 )}
               >
@@ -894,18 +896,18 @@ export default function OrdersHistoryPage() {
           </div>
 
           {/* Export Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={exportToCSV}
-              className="bg-surface border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
+              className="flex-1 sm:flex-none justify-center bg-surface border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
             >
-              📊 Export CSV
+              📊 {t.exportCsv}
             </button>
             <button
               onClick={exportToPDF}
-              className="bg-[#f0f0f5]/5 border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
+              className="flex-1 sm:flex-none justify-center bg-[#f0f0f5]/5 border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
             >
-              📄 Download PDF
+              📄 {t.downloadPdf}
             </button>
           </div>
         </div>
@@ -914,73 +916,85 @@ export default function OrdersHistoryPage() {
       {/* Mobile view (cards stacked) */}
       <div className="md:hidden space-y-4">
         {tableFilteredOrders.length === 0 ? (
-          <div className="card text-center py-10 text-muted">No orders found.</div>
+          <div className="card text-center py-10 text-muted">{t.noOrders}</div>
         ) : (
           tableFilteredOrders.map((order) => (
-            <div key={order.id} className="card space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-[#f0f0f5]">{order.id}</span>
-                <span className="bg-accent-2/10 text-accent-2 px-2 py-0.5 rounded-full font-bold text-xs">{order.table}</span>
+            <div key={order.id} className="card p-4 space-y-4 border border-border/60 bg-surface rounded-2xl">
+              {/* Header: Order ID & Table Badge */}
+              <div className="flex justify-between items-center pb-2 border-b border-border/30">
+                <span className="font-mono font-bold text-sm text-[#f0f0f5]">{order.id}</span>
+                <span className="bg-accent-2/10 text-accent-2 px-2.5 py-0.5 rounded-full font-bold text-xs">{order.table}</span>
               </div>
-              <div className="text-sm text-muted">{order.items}</div>
+              
+              {/* Body: Items & Date */}
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-[#f0f0f5]">{order.items}</p>
+                <div className="flex justify-between items-center text-xs text-muted">
+                  <span>{order.date}</span>
+                  <span className="font-display font-black text-base text-accent" style={{ color: primaryColor }}>
+                    ₹{order.total}
+                  </span>
+                </div>
+              </div>
+
+              {/* Kitchen Instructions */}
               {order.instructions && (
-                <div className="text-xs bg-white/[0.02] border border-border/40 px-2.5 py-1.5 rounded-lg text-gold font-sans mt-1">
-                  <span className="font-bold text-[9px] uppercase tracking-wider block text-muted/65 mb-0.5">Instructions:</span>
+                <div className="text-xs bg-white/[0.02] border border-border/40 px-3 py-2 rounded-xl text-gold font-sans">
+                  <span className="font-bold text-[9px] uppercase tracking-wider block text-muted/65 mb-0.5">{t.kitchenInstructions}</span>
                   {order.instructions}
                 </div>
               )}
-              <div className="flex justify-between items-center text-xs">
-                <div>
-                  <div className="text-muted text-[10px]">{order.date}</div>
-                  <div className="font-bold text-accent mt-1 text-sm">₹{order.total}</div>
-                </div>
-                <div className="flex flex-col gap-1.5 items-end">
-                  <div className="flex gap-1.5">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${order.paymentStatus === 'paid'
-                        ? 'bg-accent/10 text-accent border border-accent/20'
-                        : 'bg-gold/10 text-gold border border-gold/20'
-                      }`}>
-                      {order.paymentStatus}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${getStatusBadgeClass(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                  {order.status === 'pending' && (
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => toggleStatus(order.id, 'completed')}
-                        className="bg-accent/10 hover:bg-accent border border-accent/35 text-accent hover:text-bg font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(order.id, 'cancelled')}
-                        className="bg-danger/10 hover:bg-danger border border-danger/35 text-danger hover:text-[#f0f0f5] font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                  {order.status !== 'pending' && (
-                    <span className="text-muted/40 italic text-[10px] mt-1">Archived</span>
-                  )}
-                  {order.paymentStatus === 'unpaid' && (
+
+              {/* Status Badges Row */}
+              <div className="flex items-center gap-2 pt-1">
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                  order.paymentStatus === 'paid'
+                    ? 'bg-accent/10 text-accent border border-accent/20'
+                    : 'bg-gold/10 text-gold border border-gold/20'
+                }`}>
+                  {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
+                </span>
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
+                  {order.status === 'completed' ? t.orderCompleted : order.status === 'cancelled' ? t.cancelled : t.pending}
+                </span>
+                {order.status !== 'pending' && (
+                  <span className="text-[10px] text-muted/40 italic ml-auto">{t.archivedLabel}</span>
+                )}
+              </div>
+
+              {/* Action Buttons Row */}
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
+                {order.status === 'pending' && (
+                  <>
                     <button
-                      onClick={() => togglePaymentStatus(order.id)}
-                      className="bg-gold/10 hover:bg-gold border border-gold/35 text-gold hover:text-bg font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer mt-1.5"
+                      onClick={() => toggleStatus(order.id, 'completed')}
+                      className="flex-1 bg-accent/10 hover:bg-accent border border-accent/35 text-accent hover:text-bg font-bold py-2 rounded-xl text-xs transition-all cursor-pointer text-center"
                     >
-                      Mark Paid
+                      {t.acceptBtn}
                     </button>
-                  )}
+                    <button
+                      onClick={() => toggleStatus(order.id, 'cancelled')}
+                      className="flex-1 bg-danger/10 hover:bg-danger border border-danger/35 text-danger hover:text-white font-bold py-2 rounded-xl text-xs transition-all cursor-pointer text-center"
+                    >
+                      {t.cancelBtn}
+                    </button>
+                  </>
+                )}
+                {order.paymentStatus === 'unpaid' && (
                   <button
-                    onClick={() => setActiveReceiptOrder(order)}
-                    className="bg-accent/15 hover:bg-accent border border-accent/25 text-accent hover:text-bg font-bold px-3 py-1 rounded text-[10px] transition-all cursor-pointer mt-1.5 font-sans"
-                    style={{ borderColor: `${primaryColor}30`, color: primaryColor }}
+                    onClick={() => togglePaymentStatus(order.id)}
+                    className="flex-1 bg-gold/10 hover:bg-gold border border-gold/35 text-gold hover:text-bg font-bold py-2 rounded-xl text-xs transition-all cursor-pointer text-center"
                   >
-                    Receipt 🖨️
+                    {t.markPaid}
                   </button>
-                </div>
+                )}
+                <button
+                  onClick={() => setActiveReceiptOrder(order)}
+                  className="flex-1 bg-accent/15 hover:bg-accent border border-accent/25 text-accent hover:text-bg font-bold py-2 rounded-xl text-xs transition-all cursor-pointer text-center font-sans"
+                  style={{ borderColor: `${primaryColor}30`, color: primaryColor }}
+                >
+                  {t.receiptBtn}
+                </button>
               </div>
             </div>
           ))
@@ -993,19 +1007,19 @@ export default function OrdersHistoryPage() {
           <thead>
             <tr className="border-b border-border/50 text-[10px] uppercase font-bold tracking-wider text-muted">
               <th className="pb-3 pt-1">Order ID</th>
-              <th className="pb-3 pt-1">Table/Location</th>
-              <th className="pb-3 pt-1">Items</th>
+              <th className="pb-3 pt-1">{t.sessionTable}</th>
+              <th className="pb-3 pt-1">{t.sessionItems}</th>
               <th className="pb-3 pt-1">Total Bill</th>
               <th className="pb-3 pt-1">Date & Time</th>
-              <th className="pb-3 pt-1">Payment</th>
-              <th className="pb-3 pt-1">Status</th>
+              <th className="pb-3 pt-1">{t.paymentStatus}</th>
+              <th className="pb-3 pt-1">{t.orderStatus}</th>
               <th className="pb-3 pt-1 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/30 text-xs">
             {tableFilteredOrders.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-muted">No orders found.</td>
+                <td colSpan={8} className="text-center py-10 text-muted">{t.noOrders}</td>
               </tr>
             ) : (
               tableFilteredOrders.map((order) => (
@@ -1018,7 +1032,7 @@ export default function OrdersHistoryPage() {
                     <div className="text-muted truncate font-semibold" title={order.items}>{order.items}</div>
                     {order.instructions && (
                       <div className="text-[11px] text-gold mt-1 bg-white/[0.02] border border-border/30 px-2 py-1 rounded whitespace-pre-wrap" title={order.instructions}>
-                        <span className="font-bold text-[9px] uppercase tracking-wider block text-muted/65 mb-0.5">Instructions:</span>
+                        <span className="font-bold text-[9px] uppercase tracking-wider block text-muted/65 mb-0.5">{t.kitchenInstructions}</span>
                         {order.instructions}
                       </div>
                     )}
@@ -1030,12 +1044,12 @@ export default function OrdersHistoryPage() {
                         ? 'bg-accent/10 text-accent border border-accent/20'
                         : 'bg-gold/10 text-gold border border-gold/20'
                       }`}>
-                      {order.paymentStatus}
+                      {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
                     </span>
                   </td>
                   <td className="py-4">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${getStatusBadgeClass(order.status)}`}>
-                      {order.status}
+                      {order.status === 'completed' ? t.orderCompleted : order.status === 'cancelled' ? t.cancelled : t.pending}
                     </span>
                   </td>
                   <td className="py-4 text-right space-x-1.5">
@@ -1045,25 +1059,25 @@ export default function OrdersHistoryPage() {
                           onClick={() => toggleStatus(order.id, 'completed')}
                           className="bg-accent/10 hover:bg-accent border border-accent/35 text-accent hover:text-bg font-bold px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
                         >
-                          Accept
+                          {t.acceptBtn}
                         </button>
                         <button
                           onClick={() => toggleStatus(order.id, 'cancelled')}
                           className="bg-danger/10 hover:bg-danger border border-danger/35 text-danger hover:text-[#f0f0f5] font-bold px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
                         >
-                          Cancel
+                          {t.cancelBtn}
                         </button>
                       </>
                     )}
                     {order.status !== 'pending' && (
-                      <span className="text-muted/40 italic">Archived</span>
+                      <span className="text-muted/40 italic">{t.archivedLabel}</span>
                     )}
                     {order.paymentStatus === 'unpaid' && (
                       <button
                         onClick={() => togglePaymentStatus(order.id)}
                         className="bg-gold/10 hover:bg-gold border border-gold/35 text-gold hover:text-bg font-bold px-2 py-1 rounded text-[10px] transition-all cursor-pointer"
                       >
-                        Mark Paid
+                        {t.markPaid}
                       </button>
                     )}
                     <button
@@ -1071,7 +1085,7 @@ export default function OrdersHistoryPage() {
                       className="bg-accent/15 hover:bg-accent border border-accent/25 text-accent hover:text-bg font-bold px-2 py-1 rounded text-[10px] transition-all cursor-pointer font-sans"
                       style={{ borderColor: `${primaryColor}30`, color: primaryColor }}
                     >
-                      Receipt 🖨️
+                      {t.receiptBtn}
                     </button>
                   </td>
                 </tr>
@@ -1084,7 +1098,7 @@ export default function OrdersHistoryPage() {
       {/* Receipt Modal */}
       {activeReceiptOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-surface border border-border/80 rounded-2xl p-6 max-w-md w-full shadow-2xl relative animate-scale-in">
+          <div className="bg-surface border border-border/80 rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl relative animate-scale-in">
             {/* Close Button */}
             <button
               onClick={() => setActiveReceiptOrder(null)}
@@ -1093,16 +1107,16 @@ export default function OrdersHistoryPage() {
               ✕
             </button>
 
-            <h3 className="font-display font-black text-lg text-[#f0f0f5] mb-4">Print Receipt / KOT</h3>
+            <h3 className="font-display font-black text-lg text-[#f0f0f5] mb-4 flex-shrink-0">{t.printReceiptTitle}</h3>
 
             {/* Receipt Paper Area */}
             <div
               id="receipt-print-area"
-              className="bg-[#fcfcfa] text-[#1a1a1a] p-6 rounded-xl font-mono text-xs shadow-inner overflow-y-auto max-h-[380px] border border-stone-200"
+              className="bg-[#fcfcfa] text-[#1a1a1a] p-4 sm:p-6 rounded-xl font-mono text-xs shadow-inner overflow-y-auto flex-1 border border-stone-200"
               style={{ fontFamily: 'Courier New, Courier, monospace' }}
             >
               <div className="text-center space-y-1">
-                <h2 className="font-bold text-sm uppercase tracking-wider">{owner?.shop_name || 'Dukaan Menu'}</h2>
+                <h2 className="font-bold text-sm uppercase tracking-wider">{owner?.shop_name || 'QR Menu'}</h2>
                 <p className="text-[10px] text-stone-500">{owner?.shop_address || 'Digital QR Order'}</p>
               </div>
 
@@ -1114,7 +1128,7 @@ export default function OrdersHistoryPage() {
                   <span className="font-bold">{activeReceiptOrder.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>TABLE:</span>
+                  <span>{t.sessionTable.toUpperCase()}:</span>
                   <span className="font-bold uppercase">{activeReceiptOrder.table}</span>
                 </div>
                 <div className="flex justify-between">
@@ -1122,8 +1136,8 @@ export default function OrdersHistoryPage() {
                   <span>{activeReceiptOrder.date}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>PAYMENT:</span>
-                  <span className="font-bold uppercase">{activeReceiptOrder.paymentStatus}</span>
+                  <span>{t.paymentStatus.toUpperCase()}:</span>
+                  <span className="font-bold uppercase">{activeReceiptOrder.paymentStatus === 'paid' ? t.paid : t.unpaid}</span>
                 </div>
               </div>
 
@@ -1132,7 +1146,7 @@ export default function OrdersHistoryPage() {
               {/* Items List */}
               <div className="space-y-1.5">
                 <div className="flex justify-between font-bold text-[10px]">
-                  <span>QTY & ITEM DESCRIPTION</span>
+                  <span>{t.qtyDesc}</span>
                   <span>TOTAL</span>
                 </div>
                 <div className="border-t border-stone-300 my-1" />
@@ -1149,17 +1163,17 @@ export default function OrdersHistoryPage() {
               {/* Total Bill */}
               <div className="space-y-1">
                 <div className="flex justify-between font-bold text-sm">
-                  <span>GRAND TOTAL:</span>
+                  <span>{t.grandTotal}</span>
                   <span>₹{activeReceiptOrder.total}</span>
                 </div>
-                <p className="text-[9px] text-stone-500 italic mt-1">Prices are inclusive of all taxes.</p>
+                <p className="text-[9px] text-stone-500 italic mt-1">{t.taxInclusive}</p>
               </div>
 
               {activeReceiptOrder.instructions && (
                 <>
                   <div className="border-t border-stone-300 my-2" />
                   <div className="text-[10px]">
-                    <span className="font-bold block">KITCHEN INSTRUCTIONS:</span>
+                    <span className="font-bold block">{t.kitchenInstructions}</span>
                     <p className="italic text-stone-600 mt-0.5">{activeReceiptOrder.instructions}</p>
                   </div>
                 </>
@@ -1168,13 +1182,13 @@ export default function OrdersHistoryPage() {
               <div className="border-t border-dashed border-stone-400 my-3" />
 
               <div className="text-center space-y-1 text-[9px] text-stone-500">
-                <p>Scan QR code to order again</p>
+                <p>{t.scanToOrderAgain}</p>
                 <p className="font-bold uppercase tracking-widest mt-2">*** Thank You ***</p>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-5 flex gap-3">
+            <div className="mt-5 flex gap-3 flex-shrink-0">
               <button
                 onClick={() => {
                   const printContent = document.getElementById('receipt-print-area')?.innerHTML;
@@ -1227,13 +1241,13 @@ export default function OrdersHistoryPage() {
                 className="flex-1 hover:bg-opacity-90 border font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-lg text-bg"
                 style={{ backgroundColor: primaryColor, borderColor: `${primaryColor}20` }}
               >
-                <span>🖨️</span> Print KOT / Bill
+                <span>🖨️</span> {t.printKotBtn}
               </button>
               <button
                 onClick={() => setActiveReceiptOrder(null)}
                 className="flex-1 bg-surface border border-border hover:bg-surface/80 text-[#f0f0f5] font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
               >
-                Close
+                {t.closeBtn}
               </button>
             </div>
           </div>

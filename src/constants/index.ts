@@ -1,4 +1,5 @@
 import type { Plan, MenuItemCategory, ShopCategory, NavItem } from '@/types';
+export { LANGUAGES } from '@/i18n/translations';
 
 // ─── PLANS ────────────────────────────────────────────────────
 export const PLANS: Plan[] = [

@@ -219,6 +219,26 @@ export const useUIStore = create<UIState>()((set) => ({
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
 }));
 
+// LANGUAGE STORE
+import type { LangCode } from '@/i18n/translations';
+interface LangState {
+  ownerLang: LangCode;
+  customerLang: LangCode;
+  setOwnerLang: (lang: LangCode) => void;
+  setCustomerLang: (lang: LangCode) => void;
+}
+export const useLangStore = create<LangState>()(
+  persist(
+    (set) => ({
+      ownerLang: 'en',
+      customerLang: 'en',
+      setOwnerLang: (lang) => set({ ownerLang: lang }),
+      setCustomerLang: (lang) => set({ customerLang: lang }),
+    }),
+    { name: 'qrmenu_lang' }
+  )
+);
+
 export function usePlanLimit() {
   const { owner } = useAuthStore();
   const { itemCount } = useMenuStore();

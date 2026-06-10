@@ -171,3 +171,6 @@ export function useDisclosure(initial = false) {
   const toggle = useCallback(() => setIsOpen((s) => !s), []);
   return { isOpen, open, close, toggle };
 }
+
+export { useTranslation } from './useTranslation';
+

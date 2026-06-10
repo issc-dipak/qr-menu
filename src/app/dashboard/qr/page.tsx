@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Badge, KpiCard } from '@/components/ui/index';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore, useAnalyticsStore } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useCopyLink } from '@/hooks';
 import { cn } from '@/utils';
 import dynamic from 'next/dynamic';
@@ -17,6 +18,7 @@ export default function QrPage() {
   const { owner } = useAuthStore();
   const { data } = useAnalyticsStore();
   const { handleCopy } = useCopyLink();
+  const { t } = useTranslation('owner');
   const [appUrl, setAppUrl] = useState('');
   const [selectedTable, setSelectedTable] = useState<number>(0); // 0 = Main Menu, 1-4 = Table 1-4
 
@@ -31,24 +33,24 @@ export default function QrPage() {
   const url = owner?.shop_slug ? `${appUrl}/menu/${owner.shop_slug}${tableParam}` : 'dukaanqr.in/menu/your-shop';
 
   if (!data) {
-    return <div className="flex items-center justify-center min-h-[300px]">Loading QR code details...</div>;
+    return <div className="flex items-center justify-center min-h-[300px]">{t.loadingQr}</div>;
   }
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display font-black text-2xl">My QR Code</h1>
-        <p className="text-muted text-sm mt-1">Share this with your customers</p>
+        <h1 className="font-display font-black text-2xl">{t.qrPageTitle}</h1>
+        <p className="text-muted text-sm mt-1">{t.qrPageSubtitle}</p>
       </div>
 
       {/* Business Plan Multi-QR Selectors */}
       {isBusiness ? (
         <div className="card mb-6">
           <p className="text-xs font-bold uppercase tracking-wider text-accent-2 mb-3">
-            📍 Table / Location QR Selector (Business Feature Unlocked)
+            {t.qrSelectorLabel}
           </p>
           <div className="flex flex-wrap gap-2">
-            {['Main Menu', 'Table 1', 'Table 2', 'Table 3', 'Table 4'].map((label, idx) => (
+            {[t.mainMenu, `${t.table} 1`, `${t.table} 2`, `${t.table} 3`, `${t.table} 4`].map((label, idx) => (
               <button
                 key={label}
                 onClick={() => setSelectedTable(idx)}
@@ -69,14 +71,14 @@ export default function QrPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">
-                💡 Need separate QRs for different tables?
+                {t.needSeparateQrs}
               </p>
               <p className="text-xs text-muted max-w-xl">
-                Upgrade to the <strong>Business Plan</strong> to generate up to 5 unique table/location QR codes. Track scan locations automatically!
+                {t.upgradeToBusinessDesc}
               </p>
             </div>
             <Button size="sm" variant="ghost" onClick={() => window.location.href = '/dashboard/billing'} className="w-full sm:w-auto border-accent text-accent hover:bg-accent/5">
-              Upgrade to Business 🚀
+              {t.upgradeToBusinessBtn}
             </Button>
           </div>
         </div>
@@ -86,7 +88,7 @@ export default function QrPage() {
         {/* QR Display */}
         <div className="card flex flex-col items-center text-center">
           <Badge variant={selectedTable > 0 ? "blue" : "green"} className="mb-4">
-            ● {selectedTable > 0 ? `Table ${selectedTable} QR` : 'Main QR Active'}
+            ● {selectedTable > 0 ? t.tableQrActive.replace('{num}', String(selectedTable)) : t.mainQrActive}
           </Badge>
 
           {/* Real QR Code */}
@@ -98,32 +100,32 @@ export default function QrPage() {
             )}
           </div>
 
-          <p className="text-xs text-muted mb-1">Generated QR code URL</p>
+          <p className="text-xs text-muted mb-1">{t.generatedQrUrl}</p>
           <p className="text-accent text-sm font-medium mb-6 break-all">{url}</p>
 
           <div className="flex gap-3 flex-wrap justify-center w-full">
-            <Button size="sm" className="w-full sm:w-auto" onClick={() => toast.success('QR Downloaded! 🎉')}>⬇ Download PNG</Button>
-            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => toast.success('PDF ready! 🖨️')}>🖨 Print PDF</Button>
-            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => handleCopy(url)}>🔗 Copy Link</Button>
+            <Button size="sm" className="w-full sm:w-auto" onClick={() => toast.success('QR Downloaded! 🎉')}>{t.downloadPng}</Button>
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => toast.success('PDF ready! 🖨️')}>{t.printPdf}</Button>
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => handleCopy(url)}>{t.copyLinkBtn}</Button>
           </div>
         </div>
 
         {/* Stats & Share */}
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <KpiCard label="Total Scans"  value={data.totalScans.toLocaleString()} color="green" />
-            <KpiCard label="Scans Today"  value={data.todayScans} color="blue" />
+            <KpiCard label={t.totalScansLabel}  value={data.totalScans.toLocaleString()} color="green" />
+            <KpiCard label={t.scansTodayLabel}  value={data.todayScans} color="blue" />
           </div>
 
           {/* Share Options */}
           <div className="card">
-            <h3 className="font-display font-bold mb-4">Share Your Menu</h3>
+            <h3 className="font-display font-bold mb-4">{t.shareMenuTitle}</h3>
             <div className="space-y-2">
               {[
-                { icon: '📱', label: 'Share on WhatsApp', action: () => toast.success('Opening WhatsApp... 📱') },
-                { icon: '📋', label: 'Copy Menu Link',    action: () => handleCopy(url) },
-                { icon: '📸', label: 'Share on Instagram',action: () => toast.success('Link copied for Instagram!') },
-                { icon: '🖨️', label: 'Download Table Tent',action: () => toast.success('Table tent downloading...') },
+                { icon: '📱', label: t.shareWhatsapp, action: () => toast.success('Opening WhatsApp... 📱') },
+                { icon: '📋', label: t.copyMenuLinkBtn,    action: () => handleCopy(url) },
+                { icon: '📸', label: t.shareInstagramBtn,action: () => toast.success('Link copied for Instagram!') },
+                { icon: '🖨️', label: t.downloadTableTentBtn,action: () => toast.success('Table tent downloading...') },
               ].map((s) => (
                 <button
                    key={s.label}
@@ -139,9 +141,9 @@ export default function QrPage() {
 
           {/* Tip */}
           <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
-            <p className="text-accent text-xs font-bold tracking-wider uppercase mb-2">💡 Pro Tip</p>
+            <p className="text-accent text-xs font-bold tracking-wider uppercase mb-2">{t.proTipTitle}</p>
             <p className="text-muted text-sm leading-relaxed">
-              Print your QR code at any print shop for just ₹10–20. Place it on your counter, table, or visiting card!
+              {t.proTipDesc}
             </p>
           </div>
         </div>

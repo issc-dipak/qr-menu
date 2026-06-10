@@ -93,8 +93,8 @@ export default function SignupPage() {
 
         <p className="text-center text-muted text-xs mt-5">
           By signing up, you agree to our{' '}
-          <a href="#" className="text-accent">Terms</a> &amp;{' '}
-          <a href="#" className="text-accent">Privacy Policy</a>
+          <Link href="/terms" className="text-accent hover:underline">Terms</Link> &amp;{' '}
+          <Link href="/privacy" className="text-accent hover:underline">Privacy Policy</Link>
         </p>
         <p className="text-center text-muted text-sm mt-4">
           Already have an account?{' '}

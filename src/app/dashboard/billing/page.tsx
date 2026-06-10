@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/index';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store';
 import { PLANS } from '@/constants';
+import { useTranslation } from '@/hooks/useTranslation';
 import { formatCurrency } from '@/utils';
 import { cn } from '@/utils';
 import toast from 'react-hot-toast';
@@ -10,6 +11,7 @@ import { createSubscription } from '@/services/subscriptionService';
 
 export default function BillingPage() {
   const { owner } = useAuthStore();
+  const { t } = useTranslation('owner');
   const currentPlan = PLANS.find((p) => p.id === (owner?.plan ?? 'free')) ?? PLANS[0];
 
   const loadRazorpayScript = () => {
@@ -81,25 +83,25 @@ export default function BillingPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display font-black text-2xl">Billing & Plans</h1>
-        <p className="text-muted text-sm mt-1">Manage your subscription</p>
+        <h1 className="font-display font-black text-2xl">{t.billingTitle}</h1>
+        <p className="text-muted text-sm mt-1">{t.billingSubtitle}</p>
       </div>
 
       {/* Current Plan Banner */}
       <div className="card mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <p className="text-xs text-muted mb-1 uppercase tracking-wider">Current Plan</p>
+          <p className="text-xs text-muted mb-1 uppercase tracking-wider">{t.currentPlan}</p>
           <div className="flex items-center gap-3">
-            <p className="font-display font-black text-2xl">{currentPlan.name} Plan</p>
-            <Badge variant="green">Active</Badge>
+            <p className="font-display font-black text-2xl">{currentPlan.name} {t.plan}</p>
+            <Badge variant="green">{t.active}</Badge>
           </div>
           <p className="text-muted text-sm mt-1">
-            {currentPlan.maxItems === Infinity ? 'Unlimited' : `Up to ${currentPlan.maxItems}`} menu items · {currentPlan.maxQrCodes} QR code
+            {currentPlan.maxItems === Infinity ? t.unlimited : `${t.upTo} ${currentPlan.maxItems}`} {t.menuItemsCount} · {currentPlan.maxQrCodes} QR
           </p>
         </div>
         {owner?.plan === 'free' && (
           <Button onClick={() => handleUpgrade('pro', 149)}>
-            Upgrade to Pro ⚡
+            {t.upgradeToPro}
           </Button>
         )}
       </div>
@@ -108,6 +110,7 @@ export default function BillingPage() {
       <div className="grid md:grid-cols-3 gap-5">
         {PLANS.map((plan) => {
           const isCurrent = plan.id === (owner?.plan ?? 'free');
+          const planDesc = plan.id === 'free' ? t.planFree : plan.id === 'pro' ? t.planPro : t.planBusiness;
           return (
             <div
               key={plan.id}
@@ -119,7 +122,7 @@ export default function BillingPage() {
             >
               {plan.id === 'pro' && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase whitespace-nowrap">
-                  ⚡ Recommended
+                  {t.recommended}
                 </span>
               )}
 
@@ -129,11 +132,9 @@ export default function BillingPage() {
                 plan.id === 'pro' ? 'text-accent' : plan.id === 'business' ? 'text-accent-2' : ''
               )}>
                 {plan.price === 0 ? '₹0' : formatCurrency(plan.price)}
-                <span className="text-sm font-normal text-muted"> /mo</span>
+                <span className="text-sm font-normal text-muted">{t.perMonth}</span>
               </p>
-              <p className="text-muted text-sm mb-5">
-                {plan.id === 'free' ? 'To try it out' : plan.id === 'pro' ? 'For growing shops' : 'For multi-location shops'}
-              </p>
+              <p className="text-muted text-sm mb-5">{planDesc}</p>
 
               <hr className="border-border mb-5" />
 
@@ -148,7 +149,7 @@ export default function BillingPage() {
 
               {isCurrent ? (
                 <button disabled className="w-full py-3 rounded-xl border border-border text-muted text-sm opacity-50 cursor-not-allowed">
-                  Current Plan
+                  {t.currentPlanBtn}
                 </button>
               ) : (
                 <Button
@@ -157,7 +158,7 @@ export default function BillingPage() {
                   onClick={() => handleUpgrade(plan.id as 'pro' | 'business', plan.price)}
                   className={plan.id === 'business' ? 'border-accent-2 text-accent-2 hover:bg-accent-2/5' : ''}
                 >
-                  {plan.id === 'free' ? 'Downgrade' : `Upgrade to ${plan.name}`}
+                  {plan.id === 'free' ? t.downgrade : `${t.upgradeTo} ${plan.name}`}
                 </Button>
               )}
             </div>
@@ -167,12 +168,12 @@ export default function BillingPage() {
 
       {/* FAQ */}
       <div className="card mt-6">
-        <h3 className="font-display font-bold mb-4">Billing FAQ</h3>
+        <h3 className="font-display font-bold mb-4">{t.billingFaq}</h3>
         <div className="space-y-4">
           {[
-            { q: 'Can I cancel anytime?', a: 'Yes! Cancel anytime from your dashboard. No questions asked.' },
-            { q: 'What payment methods are accepted?', a: 'UPI, Credit/Debit Cards, Net Banking via Razorpay.' },
-            { q: 'Will my QR code change if I upgrade?', a: 'No! Your QR code stays the same forever, regardless of plan.' },
+            { q: t.faqCancelQ,  a: t.faqCancelA  },
+            { q: t.faqPaymentQ, a: t.faqPaymentA },
+            { q: t.faqQrQ,      a: t.faqQrA      },
           ].map((faq) => (
             <div key={faq.q} className="border-b border-border/50 last:border-0 pb-4 last:pb-0">
               <p className="font-medium text-sm mb-1">{faq.q}</p>

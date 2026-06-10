@@ -18,20 +18,28 @@ export function Navbar() {
       {/* Desktop links */}
       <ul className="hidden md:flex items-center gap-6 list-none">
         {[
-          ['/#how','How It Works'],
-          ['/#features','Features'],
-          ['/#pricing','Pricing']
-        ].map(([href,label])=>(
+          ['/#how', 'How It Works'],
+          ['/#features', 'Features'],
+          ['/#pricing', 'Pricing'],
+          ['/contact', 'Contact']
+        ].map(([href, label]) => (
           <li key={href}>
             <Link href={href} className="text-muted text-sm font-medium hover:text-[#f0f0f5] transition-colors cursor-pointer no-underline">
               {label}
             </Link>
           </li>
         ))}
+        {!isAuthenticated && (
+          <li>
+            <Link href="/auth/login" className="text-muted text-sm font-medium hover:text-[#f0f0f5] transition-colors cursor-pointer no-underline">
+              Login
+            </Link>
+          </li>
+        )}
         <li>
           {isAuthenticated
             ? <Link href="/dashboard/overview" className="btn-primary text-sm no-underline">Dashboard →</Link>
-            : <Link href="/auth/login" className="btn-primary text-sm no-underline">Get Started Free →</Link>
+            : <Link href="/auth/signup" className="btn-primary text-sm no-underline">Get Started Free →</Link>
           }
         </li>
       </ul>
@@ -47,17 +55,23 @@ export function Navbar() {
       {open && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-bg border-b border-border px-4 py-4 flex flex-col gap-3">
           {[
-            ['/#how','How It Works'],
-            ['/#features','Features'],
-            ['/#pricing','Pricing']
-          ].map(([href,label])=>(
-            <Link key={href} href={href} onClick={()=>setOpen(false)} className="text-muted text-sm font-medium py-2 border-b border-border/50 cursor-pointer no-underline">
+            ['/#how', 'How It Works'],
+            ['/#features', 'Features'],
+            ['/#pricing', 'Pricing'],
+            ['/contact', 'Contact']
+          ].map(([href, label]) => (
+            <Link key={href} href={href} onClick={() => setOpen(false)} className="text-muted text-sm font-medium py-2 border-b border-border/50 cursor-pointer no-underline">
               {label}
             </Link>
           ))}
+          {!isAuthenticated && (
+            <Link href="/auth/login" onClick={() => setOpen(false)} className="text-muted text-sm font-medium py-2 border-b border-border/50 cursor-pointer no-underline">
+              Login
+            </Link>
+          )}
           {isAuthenticated
             ? <Link href="/dashboard/overview" className="btn-primary text-sm no-underline w-full justify-center mt-1">Dashboard →</Link>
-            : <Link href="/auth/login" className="btn-primary text-sm no-underline w-full justify-center mt-1">Get Started Free →</Link>
+            : <Link href="/auth/signup" className="btn-primary text-sm no-underline w-full justify-center mt-1">Get Started Free →</Link>
           }
         </div>
       )}

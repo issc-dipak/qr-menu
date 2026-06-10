@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { KpiCard } from '@/components/ui/index';
 import { Button } from '@/components/ui/Button';
 import { useAnalyticsStore, useAuthStore, useMenuStore } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,7 @@ const AnalyticsChart = dynamic(() => import('@/components/features/analytics/Ana
 export default function OverviewPage() {
   const { data } = useAnalyticsStore();
   const { owner } = useAuthStore();
+  const { t } = useTranslation('owner');
   const { itemCount, fetchItems } = useMenuStore();
   const [orders, setOrders] = useState<any[]>([]);
   const [waiterCalls, setWaiterCalls] = useState<any[]>([]);
@@ -127,11 +129,11 @@ export default function OverviewPage() {
   }, []);
 
   if (!data) {
-    return <div className="flex items-center justify-center min-h-[300px]">Loading overview...</div>;
+    return <div className="flex items-center justify-center min-h-[300px]">{t.loadingOverview}</div>;
   }
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
 
   const toggleOrderStatus = (id: string) => {
     const updated = orders.map(o => o.id === id ? { ...o, status: 'completed', paymentStatus: 'paid' } : o);
@@ -148,10 +150,10 @@ export default function OverviewPage() {
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
           <h1 className="font-display font-black text-2xl">{greeting}, {owner?.name?.split(' ')[0]}! 👋</h1>
-          <p className="text-muted text-sm mt-1">Here&apos;s what&apos;s happening with your menu today.</p>
+          <p className="text-muted text-sm mt-1">{t.overviewSubtitle}</p>
         </div>
         <Link href="/dashboard/menu">
-          <Button size="sm">+ Add Item</Button>
+          <Button size="sm">{t.addItem}</Button>
         </Link>
       </div>
       {/* Active Waiter Calls Alert Panel */}
@@ -161,8 +163,8 @@ export default function OverviewPage() {
           <div className="flex items-center gap-2.5 mb-5">
             <span className="text-2xl animate-bounce">🛎️</span>
             <div>
-              <h2 className="font-display font-black text-base text-[#f0f0f5]">Active Waiter Requests</h2>
-              <p className="text-[11px] text-muted">Customers at the following tables are requesting assistance. Attend them as soon as possible.</p>
+              <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.activeWaiterRequests}</h2>
+              <p className="text-[11px] text-muted">{t.activeWaiterSubtitle}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -172,7 +174,7 @@ export default function OverviewPage() {
                 className="bg-surface border border-border rounded-xl p-4 flex items-center justify-between shadow-lg hover:border-gold/30 transition-all"
               >
                 <div>
-                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">Table</span>
+                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">{t.table}</span>
                   <span className="font-display font-extrabold text-lg text-gold">{call.table_number}</span>
                   <span className="text-[9px] text-muted block mt-0.5">
                     {new Date(call.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
@@ -182,7 +184,7 @@ export default function OverviewPage() {
                   onClick={() => resolveWaiterCall(call.id)}
                   className="bg-gold/10 hover:bg-gold border border-gold/20 hover:border-gold text-gold hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer font-sans"
                 >
-                  Done
+                  {t.done}
                 </button>
               </div>
             ))}
@@ -192,10 +194,10 @@ export default function OverviewPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <KpiCard label="Total QR Scans"  value={data.totalScans.toLocaleString()} color="green" />
-        <KpiCard label="Today's Scans"   value={data.todayScans}                  color="blue" />
-        <KpiCard label="Menu Items"       value={itemCount}                        trend={`${Math.max(0, 10 - itemCount)} slots remaining`} color="purple" />
-        <KpiCard label="This Month"       value={data.monthScans.toLocaleString()} color="gold" />
+        <KpiCard label={t.totalQrScans}  value={data.totalScans.toLocaleString()} color="green" />
+        <KpiCard label={t.todayScans}    value={data.todayScans}                  color="blue" />
+        <KpiCard label={t.menuItemsCount} value={itemCount}                       trend={`${Math.max(0, 10 - itemCount)} ${t.slotsRemaining}`} color="purple" />
+        <KpiCard label={t.thisMonth}      value={data.monthScans.toLocaleString()} color="gold" />
       </div>
 
       {/* Charts */}
@@ -203,24 +205,24 @@ export default function OverviewPage() {
         {/* Weekly Chart */}
         <div className="card">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display font-bold">Weekly Scans</h3>
-            <span className="badge badge-green text-[10px]">● Live</span>
+            <h3 className="font-display font-bold">{t.weeklyScans}</h3>
+            <span className="badge badge-green text-[10px]">{t.live}</span>
           </div>
           <AnalyticsChart data={data.weeklySeries} />
         </div>
 
         {/* Recent Orders Tracker */}
         <div className="card">
-          <h3 className="font-display font-bold mb-4">Recent Orders (Realtime)</h3>
+          <h3 className="font-display font-bold mb-4">{t.recentOrders}</h3>
           <div className="space-y-3">
             {recentOrders.length === 0 ? (
-              <p className="text-xs text-muted text-center py-6">No recent orders yet.</p>
+              <p className="text-xs text-muted text-center py-6">{t.noRecentOrders}</p>
             ) : (
               recentOrders.map((o) => (
                 <div key={o.id} className="flex flex-col gap-1.5 py-3 border-b border-border/50 last:border-0">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold bg-accent-2/15 text-accent-2 px-2 py-0.5 rounded-full">{o.table}</span>
-                    <span className="text-[10px] text-muted">{o.date?.split(',')[1] || 'Just now'}</span>
+                    <span className="text-[10px] text-muted">{o.date?.split(',')[1] || t.justNow}</span>
                   </div>
                   <p className="text-xs font-medium text-[#f0f0f5]">{o.items}</p>
                   <div className="flex items-center justify-between mt-1">
@@ -234,7 +236,7 @@ export default function OverviewPage() {
                           : 'bg-surface border-border text-muted hover:border-accent'
                       }`}
                     >
-                      {o.status === 'completed' ? '✓ Completed' : 'Mark Complete'}
+                      {o.status === 'completed' ? t.completed : t.markComplete}
                     </button>
                   </div>
                 </div>

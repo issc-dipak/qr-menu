@@ -9,6 +9,8 @@ import { cn } from '@/utils';
 import type { Owner, MenuItem } from '@/types/supabase';
 import { useCartStore } from '@/store';
 import { CartDrawer } from '@/components/features/menu/CartDrawer';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { getActiveCustomerSession } from '@/services/customerAuthService';
 import toast from 'react-hot-toast';
@@ -18,6 +20,8 @@ const CAT_ICONS: Record<string,string> = { 'Hot Drinks':'☕','Cold Drinks':'�
 
 export default function CustomerMenuPage({ params }: PageProps) {
   const router = useRouter();
+  const { t } = useTranslation('customer');
+
   const [owner, setOwner] = useState<Owner | any>(null);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -42,12 +46,12 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
   const handleCallWaiter = async () => {
     if (!tableInput.trim()) {
-      toast.error('Please enter your Table Number.');
+      toast.error(t.enterTable);
       return;
     }
     
     setWaiterCallLoading(true);
-    const toastId = toast.loading('Calling waiter...');
+    const toastId = toast.loading(`${t.calling}`);
     try {
       const { error } = await supabase.from('waiter_calls').insert({
         owner_id: owner.id,
@@ -57,7 +61,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
       
       if (error) throw error;
       
-      toast.success('Waiter called! A server will be with you shortly. 🛎️', { id: toastId });
+      toast.success(t.waiterCalled, { id: toastId });
       setWaiterModalOpen(false);
     } catch (err: any) {
       console.error('Call waiter failed:', err);
@@ -146,7 +150,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
             // Toast status update
             const updatedOrder = payload.new as any;
             toast.success(
-              `Order accepted/status updated: ${updatedOrder.status.toUpperCase()}! 🔔`,
+              `${t.orderUpdated}: ${updatedOrder.status.toUpperCase()}! 🔔`,
               {
                 duration: 6000,
                 position: 'top-center',
@@ -197,7 +201,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
     <div className="min-h-screen bg-[#0d1a12] flex items-center justify-center">
       <div className="text-center">
         <div className="w-12 h-12 border-2 border-accent/30 border-t-accent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-accent/50 text-sm">Loading menu...</p>
+        <p className="text-accent/50 text-sm">{t.loadingMenu}</p>
       </div>
     </div>
   );
@@ -205,9 +209,9 @@ export default function CustomerMenuPage({ params }: PageProps) {
   if (notFound || !owner) return (
     <div className="min-h-screen bg-[#0d1a12] flex flex-col items-center justify-center text-center px-4">
       <p className="text-5xl mb-4">🔍</p>
-      <h1 className="font-display font-black text-2xl text-accent mb-2">Shop not found</h1>
-      <p className="text-accent/50 text-sm mb-6">This menu link does not exist.</p>
-      <Link href="/" className="text-accent text-sm border border-accent/30 px-4 py-2 rounded-lg hover:bg-accent/10 transition-colors no-underline">Create your own menu →</Link>
+      <h1 className="font-display font-black text-2xl text-accent mb-2">{t.shopNotFound}</h1>
+      <p className="text-accent/50 text-sm mb-6">{t.shopNotFoundSub}</p>
+      <Link href="/" className="text-accent text-sm border border-accent/30 px-4 py-2 rounded-lg hover:bg-accent/10 transition-colors no-underline">{t.createMenu}</Link>
     </div>
   );
 
@@ -222,13 +226,16 @@ export default function CustomerMenuPage({ params }: PageProps) {
           <p className="font-display font-black text-accent text-sm md:text-base leading-tight truncate" style={{ color: primaryColor }}>{owner.shop_avatar} {owner.shop_name}</p>
           {owner.shop_address && <p className="text-[10px] text-accent/50 truncate">{owner.shop_address}</p>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Language switcher for customer */}
+          <LanguageSwitcher mode="customer" variant="pill" primaryColor={primaryColor} />
+
           {owner?.plan === 'business' && (
             <button
               onClick={() => setWaiterModalOpen(true)}
               className="text-xs bg-gold/10 border border-gold/20 text-gold px-3 py-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
             >
-              🛎️ Call Waiter
+              🛎️ {t.callWaiter}
             </button>
           )}
           <button
@@ -236,7 +243,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
             className="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
             style={{ color: primaryColor, borderColor: `${primaryColor}30` }}
           >
-            📋 My Orders
+            📋 {t.myOrders}
           </button>
           {cart.isAuthenticated && cart.customer ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -247,11 +254,11 @@ export default function CustomerMenuPage({ params }: PageProps) {
                 onClick={() => cart.logout().then(() => router.push(`/menu/${params.slug}/login`))}
                 className="text-[10px] sm:text-xs border border-danger/25 text-danger bg-danger/5 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-all cursor-pointer font-bold font-sans"
               >
-                Logout
+                {t.logout}
               </button>
             </div>
           ) : (
-            <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">Owner →</Link>
+            <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">{t.ownerLink}</Link>
           )}
         </div>
       </nav>
@@ -265,7 +272,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
             {owner.shop_address && <p className="text-accent/50 text-xs md:text-sm">{owner.shop_address}</p>}
             <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-full text-xs font-bold mt-3" style={{ color: primaryColor, borderColor: `${primaryColor}30` }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-              Open Now{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
+              {t.openNow}{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
             </div>
             {owner.shop_description && <p className="text-accent/40 text-xs mt-3 max-w-xs mx-auto leading-relaxed">{owner.shop_description}</p>}
           </div>
@@ -279,7 +286,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
             </span>
             <input
               type="text"
-              placeholder="Search dishes (e.g., Chai, Coffee)..."
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl pl-10 pr-10 py-3 text-xs text-[#f0f0f5] placeholder:text-accent/30 outline-none transition-all"
@@ -306,7 +313,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                   : "bg-transparent text-accent/40 hover:text-accent/70"
               )}
             >
-              All Dishes 🍽️
+              {t.allDishes}
             </button>
             <button
               onClick={() => setDietFilter('veg')}
@@ -318,7 +325,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
               )}
               style={dietFilter === 'veg' ? { backgroundColor: `${primaryColor}20`, color: primaryColor, borderColor: `${primaryColor}30` } : {}}
             >
-              Veg Only 🟢
+              {t.vegOnly}
             </button>
             <button
               onClick={() => setDietFilter('non-veg')}
@@ -329,7 +336,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                   : "bg-transparent text-accent/40 hover:text-accent/70"
               )}
             >
-              Non-Veg Only 🔴
+              {t.nonVegOnly}
             </button>
           </div>
         </div>
@@ -346,12 +353,12 @@ export default function CustomerMenuPage({ params }: PageProps) {
         )}
 
         <div className="max-w-xl mx-auto px-4 pt-3 pb-1">
-          <p className="text-accent/30 text-xs">{filtered.length} item{filtered.length!==1?'s':''}</p>
+          <p className="text-accent/30 text-xs">{filtered.length} {filtered.length !== 1 ? t.items : t.item}</p>
         </div>
 
         <div className="max-w-xl mx-auto px-4 py-3 space-y-3">
           {filtered.length === 0 ? (
-            <div className="text-center py-16 text-accent/30"><p className="text-4xl mb-3">🍽️</p><p className="text-sm">No items here yet</p></div>
+            <div className="text-center py-16 text-accent/30"><p className="text-4xl mb-3">🍽️</p><p className="text-sm">{t.noItems}</p></div>
           ) : filtered.map((item) => (
             <div key={item.id} className="flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-accent/10 rounded-2xl p-3.5 md:p-4 hover:border-accent/25 hover:bg-accent/[0.04] transition-all">
               {item.image_url ? (
@@ -391,7 +398,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                   className="bg-accent/10 border border-accent/20 hover:bg-accent text-accent hover:text-bg text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer"
                   style={{ borderColor: `${primaryColor}30`, color: primaryColor }}
                 >
-                  + Add
+                  {t.addToCart}
                 </button>
               </div>
             </div>
@@ -404,7 +411,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
           </div>
         ) : (
           <div className="text-center py-8 px-4 border-t border-accent/10">
-            <p className="text-accent/25 text-xs">Powered by <Link href="/" className="text-accent font-bold hover:underline">QR-Menu</Link> · <Link href="/" className="text-accent hover:underline">Create your free menu</Link></p>
+            <p className="text-accent/25 text-xs">{t.poweredBy} <Link href="/" className="text-accent font-bold hover:underline">QR-Menu</Link> · <Link href="/" className="text-accent hover:underline">{t.createFree}</Link></p>
           </div>
         )}
       </div>
@@ -416,7 +423,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
           className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent hover:bg-accent/90 text-bg font-black px-6 py-3.5 rounded-full shadow-[0_4px_25px_rgba(0,229,160,0.3)] flex items-center gap-3 transition-transform hover:scale-105 cursor-pointer border-none z-50 text-sm"
           style={{ backgroundColor: primaryColor }}
         >
-          <span>🛒 View Cart</span>
+          <span>🛒 {t.viewCart}</span>
           <span className="bg-bg text-accent text-xs font-black w-5 h-5 rounded-full flex items-center justify-center" style={{ color: primaryColor }}>
             {cart.items.reduce((acc, i) => acc + i.quantity, 0)}
           </span>
@@ -447,7 +454,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
             <div className="p-4 border-b border-accent/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📋</span>
-                <h2 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>My Orders</h2>
+                <h2 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>{t.myOrders}</h2>
                 <span className="bg-accent/15 text-accent text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: `${primaryColor}15` }}>
                   {customerOrders.length}
                 </span>
@@ -460,8 +467,8 @@ export default function CustomerMenuPage({ params }: PageProps) {
               {customerOrders.length === 0 ? (
                 <div className="text-center py-20 text-accent/30">
                   <span className="text-4xl block mb-2">🍽️</span>
-                  <p className="text-sm">You haven&apos;t placed any orders yet.</p>
-                  <p className="text-[10px] text-accent/20 mt-1">Add items to cart and check out to see them here.</p>
+                  <p className="text-sm">{t.noOrdersYet}</p>
+                  <p className="text-[10px] text-accent/20 mt-1">{t.noOrdersHint}</p>
                 </div>
               ) : (
                 customerOrders.map((order: any) => (
@@ -486,7 +493,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                             ? 'bg-accent/10 text-accent border-accent/20'
                             : 'bg-gold/10 text-gold border-gold/20'
                         }`} style={order.paymentStatus === 'paid' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
-                          {order.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                          {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
                         </span>
                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${
                           order.status === 'completed'
@@ -524,15 +531,15 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
             <div className="text-center space-y-4">
               <span className="text-4xl block animate-bounce">🛎️</span>
-              <h3 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>Call Waiter (वेटर बुलाएं)</h3>
+              <h3 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>{t.callWaiterTitle}</h3>
               <p className="text-xs text-accent/60 leading-relaxed">
-                Please enter your Table Number below to summon assistance. A waiter will reach you shortly.
+                {t.callWaiterDesc}
               </p>
 
               <div className="space-y-3 pt-2">
                 <input
                   type="text"
-                  placeholder="E.g., 4"
+                  placeholder={t.tablePlaceholder}
                   value={tableInput}
                   onChange={(e) => setTableInput(e.target.value)}
                   className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl px-4 py-3 text-center font-bold text-sm text-[#f0f0f5] placeholder:text-accent/20 outline-none transition-all"
@@ -545,7 +552,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                     onClick={() => setWaiterModalOpen(false)}
                     className="flex-1 bg-transparent hover:bg-white/[0.03] border border-accent/10 hover:border-accent/30 text-accent/70 hover:text-accent font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
                   >
-                    Cancel
+                    {t.cancel}
                   </button>
                   <button
                     type="button"
@@ -554,7 +561,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                     className="flex-1 font-bold py-2.5 rounded-xl text-xs text-bg hover:opacity-90 transition-all cursor-pointer border-none"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    {waiterCallLoading ? 'Calling...' : 'Call Now'}
+                    {waiterCallLoading ? t.calling : t.callNow}
                   </button>
                 </div>
               </div>
