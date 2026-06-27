@@ -173,32 +173,35 @@ interface AnalyticsState {
   data: AnalyticsData | null;
   dateRange: '7d' | '30d' | '3m';
   loading: boolean;
-  fetchAnalytics: (ownerId: string) => Promise<void>;
+  fetchAnalytics: (ownerId: string, range?: '7d' | '30d' | '3m') => Promise<void>;
   setDateRange: (r: '7d' | '30d' | '3m') => void;
 }
-export const useAnalyticsStore = create<AnalyticsState>()((set) => ({
+export const useAnalyticsStore = create<AnalyticsState>()((set, get) => ({
   data: null, dateRange: '7d', loading: false,
-  fetchAnalytics: async (ownerId) => {
+  fetchAnalytics: async (ownerId, range) => {
+    const selectedRange = range || get().dateRange;
     set({ loading: true });
     try {
+      const days = selectedRange === '7d' ? 7 : selectedRange === '30d' ? 30 : 90;
       const [summary, dailySeries, peakHours] = await Promise.all([
-        getAnalyticsSummary(ownerId), getDailyScans(ownerId, 7), getPeakHours(ownerId),
+        getAnalyticsSummary(ownerId), getDailyScans(ownerId, days), getPeakHours(ownerId),
       ]);
-      const total = Number(summary.total_scans);
+      
+      const totalInRange = dailySeries.reduce((sum, d) => sum + d.scans, 0);
       const weeklySeries = dailySeries;
-      const uniqueVisitors = Math.round(total * 0.7) || 0;
-      const avgDailyScans = Math.round(total / 7) || 0;
+      const uniqueVisitors = Math.round(totalInRange * 0.7) || 0;
+      const avgDailyScans = Math.round(totalInRange / days) || 0;
       const peakDayVal = dailySeries.reduce((max, d) => d.scans > max.scans ? d : max, dailySeries[0] ?? { day: 'None', scans: 0 });
       const peakDay = peakDayVal.scans > 0 ? `${peakDayVal.day} (${peakDayVal.scans} scans)` : 'None';
 
       const topItems = [
-        { id: '1', emoji: '☕', name: 'Masala Chai', views: Math.round(total * 0.4) || 0, percentage: total > 0 ? 40 : 0 },
-        { id: '2', emoji: '🥪', name: 'Samosa', views: Math.round(total * 0.25) || 0, percentage: total > 0 ? 25 : 0 },
-        { id: '3', emoji: '🥤', name: 'Lassi', views: Math.round(total * 0.15) || 0, percentage: total > 0 ? 15 : 0 },
+        { id: '1', emoji: '☕', name: 'Masala Chai', views: Math.round(totalInRange * 0.4) || 0, percentage: totalInRange > 0 ? 40 : 0 },
+        { id: '2', emoji: '🥪', name: 'Samosa', views: Math.round(totalInRange * 0.25) || 0, percentage: totalInRange > 0 ? 25 : 0 },
+        { id: '3', emoji: '🥤', name: 'Lassi', views: Math.round(totalInRange * 0.15) || 0, percentage: totalInRange > 0 ? 15 : 0 },
       ];
 
       set({ data: {
-        totalScans: total, todayScans: Number(summary.today_scans),
+        totalScans: totalInRange, todayScans: Number(summary.today_scans),
         weekScans: Number(summary.week_scans), monthScans: Number(summary.month_scans),
         dailySeries, weeklySeries, peakHours, uniqueVisitors, avgDailyScans, peakDay, topItems
       }});

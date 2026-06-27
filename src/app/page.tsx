@@ -52,7 +52,7 @@ export default function HomePage() {
               <h3 className="font-display font-bold text-lg text-white">Customize Your Menu</h3>
               <p className="text-muted text-xs leading-relaxed mt-1">See how your digital menu will look to your customers instantly. Type your cafe name or change colors!</p>
             </div>
-            
+
             <div className="h-px bg-border/40" />
 
             {/* Shop Name Input */}

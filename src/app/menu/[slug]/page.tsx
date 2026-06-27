@@ -474,7 +474,9 @@ export default function CustomerMenuPage({ params }: PageProps) {
                 customerOrders.map((order: any) => (
                   <div key={order.id} className="bg-white/[0.02] border border-accent/10 p-4 rounded-xl space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-xs text-accent" style={{ color: primaryColor }}>{order.id}</span>
+                      <span className="font-mono font-bold text-xs text-accent" style={{ color: primaryColor }}>
+                        {order.id.includes('-') && order.id.length > 15 ? `#${order.id.split('-')[0]}` : order.id}
+                      </span>
                       <span className="bg-accent-2/10 text-accent-2 text-[10px] font-bold px-2 py-0.5 rounded-full">{order.table}</span>
                     </div>
 

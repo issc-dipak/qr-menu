@@ -291,8 +291,8 @@ export default function OrdersHistoryPage() {
         const mapped: OrderRecord[] = dbOrders.map((o: any) => ({
           id: o.id,
           table: o.delivery_address || 'Takeaway',
-          items: typeof o.items === 'string' ? o.items : 
-                 Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
+          items: typeof o.items === 'string' ? o.items :
+            Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
           total: Number(o.total),
           date: new Date(o.created_at).toLocaleString('en-IN', {
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -426,15 +426,15 @@ export default function OrdersHistoryPage() {
     try {
       await updateOrderStatus(id, newStatus);
       toast.success(`Order status updated to ${newStatus}! 🎉`, { id: toastId });
-      
+
       // Reload orders from the database
       if (owner?.id) {
         const dbOrders = await getShopOrders(owner.id);
         const mapped: OrderRecord[] = dbOrders.map((o: any) => ({
           id: o.id,
           table: o.delivery_address || 'Takeaway',
-          items: typeof o.items === 'string' ? o.items : 
-                 Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
+          items: typeof o.items === 'string' ? o.items :
+            Array.isArray(o.items) ? o.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ') : '',
           total: Number(o.total),
           date: new Date(o.created_at).toLocaleString('en-IN', {
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -455,7 +455,7 @@ export default function OrdersHistoryPage() {
       toast.error('No orders to export!');
       return;
     }
-    
+
     const headers = ['Order ID', 'Table', 'Items', 'Total (INR)', 'Date & Time', 'Payment Status', 'Order Status', 'Instructions'];
     const rows = orders.map((o) => [
       o.id,
@@ -467,12 +467,12 @@ export default function OrdersHistoryPage() {
       o.status.toUpperCase(),
       o.instructions ? `"${o.instructions.replace(/"/g, '""')}"` : ''
     ]);
-    
+
     const csvContent = [
       headers.join(','),
       ...rows.map(e => e.join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -508,9 +508,9 @@ export default function OrdersHistoryPage() {
       .filter((o) => o.status === 'completed' || o.paymentStatus === 'paid')
       .reduce((sum, o) => sum + o.total, 0);
 
-    const tableRows = orders.map(o => `
+    const tableRows = tableFilteredOrders.map(o => `
       <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 10px; font-weight: bold; font-family: monospace;">${o.id}</td>
+        <td style="padding: 10px; font-weight: bold; font-family: monospace;">${o.id.includes('-') && o.id.length > 15 ? '#' + o.id.split('-')[0] : o.id}</td>
         <td style="padding: 10px;">${o.table}</td>
         <td style="padding: 10px; max-width: 300px; word-break: break-all;">${o.items}</td>
         <td style="padding: 10px;">${o.date}</td>
@@ -922,10 +922,10 @@ export default function OrdersHistoryPage() {
             <div key={order.id} className="card p-4 space-y-4 border border-border/60 bg-surface rounded-2xl">
               {/* Header: Order ID & Table Badge */}
               <div className="flex justify-between items-center pb-2 border-b border-border/30">
-                <span className="font-mono font-bold text-sm text-[#f0f0f5]">{order.id}</span>
+                <span className="font-mono font-bold text-sm text-[#f0f0f5]">{order.id.includes('-') && order.id.length > 15 ? `#${order.id.split('-')[0]}` : order.id}</span>
                 <span className="bg-accent-2/10 text-accent-2 px-2.5 py-0.5 rounded-full font-bold text-xs">{order.table}</span>
               </div>
-              
+
               {/* Body: Items & Date */}
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[#f0f0f5]">{order.items}</p>
@@ -947,11 +947,10 @@ export default function OrdersHistoryPage() {
 
               {/* Status Badges Row */}
               <div className="flex items-center gap-2 pt-1">
-                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                  order.paymentStatus === 'paid'
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${order.paymentStatus === 'paid'
                     ? 'bg-accent/10 text-accent border border-accent/20'
                     : 'bg-gold/10 text-gold border border-gold/20'
-                }`}>
+                  }`}>
                   {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
                 </span>
                 <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
@@ -1024,7 +1023,7 @@ export default function OrdersHistoryPage() {
             ) : (
               tableFilteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
-                  <td className="py-4 font-bold text-[#f0f0f5]">{order.id}</td>
+                  <td className="py-4 font-bold text-[#f0f0f5]">{order.id.includes('-') && order.id.length > 15 ? `#${order.id.split('-')[0]}` : order.id}</td>
                   <td className="py-4">
                     <span className="bg-accent-2/10 text-accent-2 px-2 py-0.5 rounded-full font-bold">{order.table}</span>
                   </td>
@@ -1041,8 +1040,8 @@ export default function OrdersHistoryPage() {
                   <td className="py-4 text-muted">{order.date}</td>
                   <td className="py-4">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${order.paymentStatus === 'paid'
-                        ? 'bg-accent/10 text-accent border border-accent/20'
-                        : 'bg-gold/10 text-gold border border-gold/20'
+                      ? 'bg-accent/10 text-accent border border-accent/20'
+                      : 'bg-gold/10 text-gold border border-gold/20'
                       }`}>
                       {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
                     </span>
@@ -1125,7 +1124,7 @@ export default function OrdersHistoryPage() {
               <div className="space-y-1 text-[10px]">
                 <div className="flex justify-between">
                   <span>ORDER ID:</span>
-                  <span className="font-bold">{activeReceiptOrder.id}</span>
+                  <span className="font-bold">{activeReceiptOrder.id.includes('-') && activeReceiptOrder.id.length > 15 ? `#${activeReceiptOrder.id.split('-')[0]}` : activeReceiptOrder.id}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t.sessionTable.toUpperCase()}:</span>
@@ -1198,7 +1197,7 @@ export default function OrdersHistoryPage() {
                       windowPrint.document.write(`
                         <html>
                           <head>
-                            <title>Print Receipt - ${activeReceiptOrder.id}</title>
+                            <title>Print Receipt - ${activeReceiptOrder.id.includes('-') && activeReceiptOrder.id.length > 15 ? '#' + activeReceiptOrder.id.split('-')[0] : activeReceiptOrder.id}</title>
                             <style>
                               body {
                                 font-family: 'Courier New', Courier, monospace;

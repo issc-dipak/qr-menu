@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { KpiCard } from '@/components/ui/index';
 import { Button } from '@/components/ui/Button';
 import { useAnalyticsStore, useAuthStore } from '@/store';
@@ -13,8 +14,14 @@ const AnalyticsChart = dynamic(() => import('@/components/features/analytics/Ana
 
 export default function AnalyticsPage() {
   const { owner } = useAuthStore();
-  const { data, dateRange, setDateRange } = useAnalyticsStore();
+  const { data, dateRange, setDateRange, fetchAnalytics } = useAnalyticsStore();
   const { t, lang } = useTranslation('owner');
+
+  useEffect(() => {
+    if (owner?.id) {
+      fetchAnalytics(owner.id, dateRange);
+    }
+  }, [owner?.id, dateRange, fetchAnalytics]);
 
   const translatePeakDay = (peakDayStr: string) => {
     if (!peakDayStr) return '';
