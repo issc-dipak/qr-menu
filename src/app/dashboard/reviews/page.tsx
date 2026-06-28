@@ -28,7 +28,7 @@ export default function DashboardReviewsPage() {
 
     async function loadData() {
       try {
-        await loadReviews(owner.id);
+        await loadReviews(owner!.id);
       } catch (err) {
         console.error('Failed to load dashboard owner reviews:', err);
       } finally {
