@@ -251,6 +251,13 @@ export default function CustomerMenuPage({ params }: PageProps) {
               🛎️ <span className="hidden xs:inline">{t.callWaiter}</span>
             </button>
           )}
+          <Link
+            href={`/menu/${params.slug}/review`}
+            className="text-[9px] sm:text-[11px] font-semibold bg-white/5 border border-border px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans no-underline"
+            style={{ borderColor: '#eab30825', color: '#eab308', backgroundColor: '#eab30808' }}
+          >
+            ⭐ <span className="hidden xs:inline">Review</span>
+          </Link>
           <button
             onClick={() => setOrdersHistoryOpen(true)}
             className="text-[9px] sm:text-[11px] font-semibold bg-white/5 border border-border text-white px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
@@ -294,9 +301,18 @@ export default function CustomerMenuPage({ params }: PageProps) {
                 <span>📍</span> {owner.shop_address}
               </p>
             )}
-            <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold mt-2" style={{ color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-              {t.openNow}{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+              <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold" style={{ color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                {t.openNow}{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
+              </div>
+              <Link 
+                href={`/menu/${params.slug}/review`} 
+                className="inline-flex items-center gap-1 bg-gold/10 border border-gold/25 text-gold px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold no-underline hover:bg-gold/15 active:scale-95 transition-all"
+                style={{ color: '#eab308', borderColor: '#eab30825', backgroundColor: '#eab30808' }}
+              >
+                ⭐ Review
+              </Link>
             </div>
             {owner.shop_description && <p className="text-muted text-[10px] sm:text-xs mt-2.5 max-w-xs mx-auto leading-relaxed">{owner.shop_description}</p>}
           </div>
