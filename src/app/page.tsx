@@ -9,46 +9,32 @@ function AnimatedCounter({ value, duration = 1500 }: { value: string; duration?:
   const [count, setCount] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
-  const match = value.match(/^([^\d]*)([\d]+)([\s\S]*)$/);
-  const prefix = match ? match[1] : '';
-  const target = match ? parseInt(match[2], 10) : 0;
-  const suffix = match ? match[3] : value;
+  const numericPart = value.match(/\d+/)?.[0] || '';
+  const target = parseInt(numericPart, 10) || 0;
+  const prefix = value.split(numericPart)[0] || '';
+  const suffix = value.split(numericPart)[1] || '';
 
   useEffect(() => {
     setIsMounted(true);
     if (target === 0) return;
 
-    let timer: NodeJS.Timeout;
-    
-    const runAnimation = () => {
-      let current = 0;
-      const steps = 30;
-      const stepTime = duration / steps;
-      const increment = target / steps;
+    let startTimestamp: number | null = null;
+    let animationFrameId: number;
 
-      if (timer) clearInterval(timer);
-      
-      setCount(0);
-      timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          setCount(target);
-          clearInterval(timer);
-        } else {
-          setCount(Math.floor(current));
-        }
-      }, stepTime);
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) {
+        animationFrameId = window.requestAnimationFrame(step);
+      }
     };
-
-    runAnimation();
-
-    const repeatTimer = setInterval(() => {
-      runAnimation();
-    }, duration + 3500);
+    animationFrameId = window.requestAnimationFrame(step);
 
     return () => {
-      if (timer) clearInterval(timer);
-      clearInterval(repeatTimer);
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
     };
   }, [target, duration]);
 

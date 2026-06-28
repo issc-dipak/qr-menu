@@ -52,7 +52,7 @@ export function LanguageSwitcher({
         <button
           onClick={() => setOpen((o) => !o)}
           title="Switch Language / भाषा बदलें"
-          className="flex items-center gap-1 text-[12px] sm:text-sm font-semibold px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg border transition-all cursor-pointer font-sans select-none"
+          className="flex items-center gap-1 text-[9px] sm:text-xs font-semibold px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg border transition-all cursor-pointer font-sans select-none"
           style={{
             backgroundColor: `${primaryColor}12`,
             borderColor: `${primaryColor}30`,
