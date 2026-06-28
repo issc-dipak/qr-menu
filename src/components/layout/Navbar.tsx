@@ -21,6 +21,7 @@ export function Navbar() {
           ['/#how', 'How It Works'],
           ['/#features', 'Features'],
           ['/#pricing', 'Pricing'],
+          ['/reviews', 'Reviews'],
           ['/contact', 'Contact']
         ].map(([href, label]) => (
           <li key={href}>
@@ -58,6 +59,7 @@ export function Navbar() {
             ['/#how', 'How It Works'],
             ['/#features', 'Features'],
             ['/#pricing', 'Pricing'],
+            ['/reviews', 'Reviews'],
             ['/contact', 'Contact']
           ].map(([href, label]) => (
             <Link key={href} href={href} onClick={() => setOpen(false)} className="text-muted text-sm font-medium py-2 border-b border-border/50 cursor-pointer no-underline">

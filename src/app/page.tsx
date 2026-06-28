@@ -327,7 +327,7 @@ export default function HomePage() {
                   links: [
                     { label: 'FAQ', href: '#faq' },
                     { label: 'Contact Us', href: '/contact' },
-                    { label: 'WhatsApp', href: 'https://wa.me/919999999999' }
+                    { label: 'Reviews', href: '/reviews' }
                   ]
                 },
                 {
