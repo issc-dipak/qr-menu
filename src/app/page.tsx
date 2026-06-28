@@ -297,65 +297,73 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-surface border-t border-border px-4 md:px-12 pt-10 md:pt-12 pb-6">
+      <footer className="bg-surface border-t border-border/20 px-4 py-8 md:px-12 md:py-12">
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 md:mb-10">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 font-display font-black text-base mb-3">
-                <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-xs">🔳</span>
+          {/* Top row: Brand info & Columns Grid */}
+          <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-8 mb-6 md:mb-10">
+            <div className="max-w-xs">
+              <div className="flex items-center gap-1.5 font-display font-black text-sm md:text-base mb-2">
+                <span className="w-5.5 h-5.5 rounded-md bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-xs">🔳</span>
                 QR-Menu
               </div>
-              <p className="text-muted text-xs leading-relaxed max-w-[200px]">Digital menus for every Indian shop. Simple, fast, always up-to-date.</p>
+              <p className="text-muted/70 text-[10px] md:text-xs leading-relaxed max-w-[220px]">
+                Digital menus for every Indian shop. Simple, fast, always up-to-date.
+              </p>
             </div>
-            {[
-              {
-                title: 'Product',
-                links: [
-                  { label: 'How It Works', href: '#how' },
-                  { label: 'Features', href: '#features' },
-                  { label: 'Pricing', href: '#pricing' }
-                ]
-              },
-              {
-                title: 'Support',
-                links: [
-                  { label: 'FAQ', href: '#faq' },
-                  { label: 'Contact Us', href: '/contact' },
-                  { label: 'WhatsApp Support', href: 'https://wa.me/919999999999' }
-                ]
-              },
-              {
-                title: 'Legal',
-                links: [
-                  { label: 'Privacy Policy', href: '/privacy' },
-                  { label: 'Terms of Service', href: '/terms' },
-                  { label: 'Refund Policy', href: '/refund' }
-                ]
-              },
-            ].map((col) => (
-              <div key={col.title}>
-                <h4 className="text-[10px] font-bold tracking-widest uppercase text-muted mb-3">{col.title}</h4>
-                <ul className="space-y-2">
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      {l.href.startsWith('/') ? (
-                        <Link href={l.href} className="text-muted text-xs hover:text-[#f0f0f5] transition-colors no-underline">
-                          {l.label}
-                        </Link>
-                      ) : (
-                        <a href={l.href} className="text-muted text-xs hover:text-[#f0f0f5] transition-colors">
-                          {l.label}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+
+            {/* Links columns grid */}
+            <div className="grid grid-cols-3 gap-4 md:gap-12 flex-1 max-w-xl">
+              {[
+                {
+                  title: 'Product',
+                  links: [
+                    { label: 'How It Works', href: '#how' },
+                    { label: 'Features', href: '#features' },
+                    { label: 'Pricing', href: '#pricing' }
+                  ]
+                },
+                {
+                  title: 'Support',
+                  links: [
+                    { label: 'FAQ', href: '#faq' },
+                    { label: 'Contact Us', href: '/contact' },
+                    { label: 'WhatsApp', href: 'https://wa.me/919999999999' }
+                  ]
+                },
+                {
+                  title: 'Legal',
+                  links: [
+                    { label: 'Privacy Policy', href: '/privacy' },
+                    { label: 'Terms of Service', href: '/terms' },
+                    { label: 'Refund Policy', href: '/refund' }
+                  ]
+                },
+              ].map((col) => (
+                <div key={col.title}>
+                  <h4 className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-muted/65 mb-2 md:mb-3">{col.title}</h4>
+                  <ul className="space-y-1.5 md:space-y-2">
+                    {col.links.map((l) => (
+                      <li key={l.label}>
+                        {l.href.startsWith('/') ? (
+                          <Link href={l.href} className="text-muted/80 text-[10px] md:text-xs hover:text-[#f0f0f5] transition-colors no-underline">
+                            {l.label}
+                          </Link>
+                        ) : (
+                          <a href={l.href} className="text-muted/80 text-[10px] md:text-xs hover:text-[#f0f0f5] transition-colors">
+                            {l.label}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="border-t border-border pt-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <p className="text-muted text-xs">© 2026 QR-Menu. Made with ❤️ in India 🇮🇳</p>
-            <p className="text-accent text-xs font-bold">Every Shop, Go Digital!</p>
+
+          <div className="border-t border-border/20 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left">
+            <p className="text-muted/40 text-[9px] sm:text-xs">© 2026 QR-Menu. Made with ❤️ in India 🇮🇳</p>
+            <p className="text-accent text-[9px] sm:text-xs font-bold tracking-wider uppercase" style={{ color: '#00e5a0' }}>Every Shop, Go Digital!</p>
           </div>
         </div>
       </footer>
