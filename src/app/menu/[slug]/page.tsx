@@ -239,46 +239,46 @@ export default function CustomerMenuPage({ params }: PageProps) {
           </p>
           {owner.shop_address && <p className="text-[9px] sm:text-[10px] text-muted truncate mt-0.5">{owner.shop_address}</p>}
         </div>
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Language switcher for customer */}
           <LanguageSwitcher mode="customer" variant="pill" primaryColor={primaryColor} />
 
           {owner?.plan === 'business' && (
             <button
               onClick={() => setWaiterModalOpen(true)}
-              className="text-[9px] sm:text-[11px] font-semibold bg-gold/5 border border-gold/25 text-gold px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:bg-gold/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
+              className="text-[12px] sm:text-sm font-semibold bg-gold/5 border border-gold/25 text-gold px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg hover:bg-gold/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
             >
               🛎️ <span className="hidden xs:inline">{t.callWaiter}</span>
             </button>
           )}
           <Link
             href={`/menu/${params.slug}/review`}
-            className="text-[9px] sm:text-[11px] font-semibold bg-white/5 border border-border px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans no-underline"
+            className="text-[12px] sm:text-sm font-semibold bg-white/5 border border-border px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans no-underline"
             style={{ borderColor: '#eab30825', color: '#eab308', backgroundColor: '#eab30808' }}
           >
             ⭐ <span className="hidden xs:inline">Review</span>
           </Link>
           <button
             onClick={() => setOrdersHistoryOpen(true)}
-            className="text-[9px] sm:text-[11px] font-semibold bg-white/5 border border-border text-white px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
+            className="text-[12px] sm:text-sm font-semibold bg-white/5 border border-border text-white px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
             style={{ borderColor: `${primaryColor}20`, color: primaryColor }}
           >
             📋 <span className="hidden xs:inline">{t.myOrders}</span>
           </button>
           {cart.isAuthenticated && cart.customer ? (
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span className="text-[8px] sm:text-[10px] text-muted font-sans font-medium hidden md:inline bg-surface-2 px-1.5 py-0.5 rounded border border-border">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-[10px] sm:text-xs text-muted font-sans font-medium hidden md:inline bg-surface-2 px-2 py-1 rounded border border-border">
                 {cart.customer.mobileNumber}
               </span>
               <button
                 onClick={() => cart.logout().then(() => router.push(`/menu/${params.slug}/login`))}
-                className="text-[8px] sm:text-[10px] border border-danger/20 text-danger bg-danger/5 px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:bg-danger/10 active:scale-95 transition-all cursor-pointer font-semibold font-sans"
+                className="text-[11px] sm:text-xs border border-danger/20 text-danger bg-danger/5 px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg hover:bg-danger/10 active:scale-95 transition-all cursor-pointer font-semibold font-sans"
               >
                 {t.logout}
               </button>
             </div>
           ) : (
-            <Link href="/auth/login" className="text-[9px] sm:text-[11px] border border-border text-muted hover:text-white hover:border-white/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg transition-all no-underline flex-shrink-0">{t.ownerLink}</Link>
+            <Link href="/auth/login" className="text-[11px] sm:text-xs border border-border text-muted hover:text-white hover:border-white/20 px-2 py-1 sm:px-3 sm:py-2 rounded-md sm:rounded-lg transition-all no-underline flex-shrink-0">{t.ownerLink}</Link>
           )}
         </div>
       </nav>
