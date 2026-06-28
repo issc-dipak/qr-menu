@@ -1,11 +1,87 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { PLANS } from '@/constants';
 import { formatCurrency, cn } from '@/utils';
 
+function AnimatedCounter({ value, duration = 1500 }: { value: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const match = value.match(/^([^\d]*)([\d]+)([\s\S]*)$/);
+  const prefix = match ? match[1] : '';
+  const target = match ? parseInt(match[2], 10) : 0;
+  const suffix = match ? match[3] : value;
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (target === 0) return;
+
+    let timer: NodeJS.Timeout;
+    
+    const runAnimation = () => {
+      let current = 0;
+      const steps = 30;
+      const stepTime = duration / steps;
+      const increment = target / steps;
+
+      if (timer) clearInterval(timer);
+      
+      setCount(0);
+      timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          setCount(target);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(current));
+        }
+      }, stepTime);
+    };
+
+    runAnimation();
+
+    const repeatTimer = setInterval(() => {
+      runAnimation();
+    }, duration + 3500);
+
+    return () => {
+      if (timer) clearInterval(timer);
+      clearInterval(repeatTimer);
+    };
+  }, [target, duration]);
+
+  if (!isMounted) {
+    return <span>{value}</span>;
+  }
+
+  return (
+    <span>
+      {prefix}
+      {target === 0 ? '0' : count}
+      {suffix}
+    </span>
+  );
+}
+
 export default function HomePage() {
+  const words = ["Ready in 5 Minutes", "Free Forever 🚀", "No App Download 📲", "Loved by Shop Owners ❤️"];
+  const [wordIndex, setWordIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setWordIndex((prev) => (prev + 1) % words.length);
+        setFade(true);
+      }, 300);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -56,7 +132,12 @@ export default function HomePage() {
 
           <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.04] tracking-tight max-w-4xl animate-fade-up">
             Your Shop&apos;s Digital Menu,{' '}
-            <span className="gradient-text">Ready in 5 Minutes</span>
+            <span className={cn(
+              "gradient-text inline-block transition-all duration-300 transform",
+              fade ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+            )}>
+              {words[wordIndex]}
+            </span>
           </h1>
 
           <p className="text-muted text-base md:text-lg max-w-sm md:max-w-lg mx-auto mt-5 mb-8 font-light leading-relaxed animate-fade-up" style={{ animationDelay: '150ms' }}>
@@ -67,7 +148,7 @@ export default function HomePage() {
             <Link href="/auth/signup" className="btn-primary text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl shadow-glow no-underline justify-center">
               Start Free — No Credit Card 🚀
             </Link>
-            <Link href="/menu/dipak-creation" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
+            <Link href="/demo" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
               See Live Demo →
             </Link>
           </div>
@@ -83,7 +164,9 @@ export default function HomePage() {
           { n: '5', l: 'Shops Already Using' },
         ].map((s) => (
           <div key={s.l} className="text-center py-6 px-3 bg-surface">
-            <p className="font-display font-black text-2xl md:text-3xl gradient-text">{s.n}</p>
+            <p className="font-display font-black text-2xl md:text-3xl gradient-text">
+              <AnimatedCounter value={s.n} />
+            </p>
             <p className="text-muted text-xs md:text-sm mt-1">{s.l}</p>
           </div>
         ))}
