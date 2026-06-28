@@ -771,7 +771,7 @@ export default function OrdersHistoryPage() {
           </div>
 
           {/* Date Range Select */}
-          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 overflow-x-auto scrollbar-none w-full sm:w-auto">
+          <div className="flex bg-surface border border-border rounded-lg p-0.5 gap-0.5 overflow-x-auto scrollbar-none w-full sm:w-auto">
             {([
               { value: 'all', label: t.dateAllTime },
               { value: 'today', label: t.dateToday },
@@ -783,7 +783,7 @@ export default function OrdersHistoryPage() {
                 key={f.value}
                 onClick={() => setDateFilter(f.value)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-1 sm:flex-none text-center flex-shrink-0',
+                  'px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide transition-all border-none font-sans cursor-pointer flex-1 sm:flex-none text-center flex-shrink-0 whitespace-nowrap',
                   dateFilter === f.value ? 'bg-white/10 text-white' : 'bg-transparent text-muted hover:text-white'
                 )}
               >

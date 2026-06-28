@@ -201,8 +201,10 @@ export const useAnalyticsStore = create<AnalyticsState>()((set, get) => ({
       ];
 
       set({ data: {
-        totalScans: totalInRange, todayScans: Number(summary.today_scans),
-        weekScans: Number(summary.week_scans), monthScans: Number(summary.month_scans),
+        totalScans: Number(summary.total_scans),
+        todayScans: Number(summary.today_scans),
+        weekScans: Number(summary.week_scans),
+        monthScans: Number(summary.month_scans),
         dailySeries, weeklySeries, peakHours, uniqueVisitors, avgDailyScans, peakDay, topItems
       }});
     } finally { set({ loading: false }); }
