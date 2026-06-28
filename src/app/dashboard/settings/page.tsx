@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Toggle } from '@/components/ui/index';
-import { useAuthStore, useLangStore } from '@/store';
+import { useAuthStore, useLangStore, useMenuStore } from '@/store';
+import { supabase } from '@/lib/supabase';
 import { SHOP_CATEGORIES, LANGUAGES } from '@/constants';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils';
@@ -15,13 +16,25 @@ import { uploadShopAvatar } from '@/services/ownerService';
 type Tab = 'profile' | 'shop' | 'theme' | 'notifications' | 'language' | 'danger';
 
 export default function SettingsPage() {
-  const { owner, updateOwner } = useAuthStore();
+  const { owner, updateOwner, logout } = useAuthStore();
+  const { fetchItems } = useMenuStore();
   const { ownerLang, setOwnerLang } = useLangStore();
   const { t } = useTranslation('owner');
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [notifs, setNotifs] = useState({ daily: true, weekly: true, product: false, marketing: true });
   const [themeForm, setThemeForm] = useState<{ primaryColor: string; fontFamily: string; layout: 'grid' | 'list' }>({ primaryColor: '#6366f1', fontFamily: 'Plus Jakarta Sans', layout: 'grid' });
   const [isEmojiModalOpen, setIsEmojiModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'reset' | 'delete';
+    shopNameInput: string;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    type: 'reset',
+    shopNameInput: '',
+    loading: false,
+  });
   const SHOP_EMOJIS = ['🏪', '🍕', '🍔', '☕', '🍰', '🍣', '🛍️', '🍦', '🍜', '🥗', '🍳', '🍹', '🍷', '🍽️'];
 
   const TABS: { id: Tab; label: string; icon: any }[] = [
@@ -133,6 +146,71 @@ export default function SettingsPage() {
   const saveTheme = async () => {
     const success = await updateOwner({ theme_settings: themeForm });
     if (success) toast.success('Theme settings saved successfully!');
+  };
+
+  const openResetConfirm = () => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'reset',
+      shopNameInput: '',
+      loading: false,
+    });
+  };
+
+  const openDeleteConfirm = () => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'delete',
+      shopNameInput: '',
+      loading: false,
+    });
+  };
+
+  const executeResetMenu = async () => {
+    if (!owner?.id) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
+    const toastId = toast.loading('Deleting menu items...');
+    try {
+      const { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('owner_id', owner.id);
+
+      if (error) throw error;
+
+      await fetchItems(owner.id);
+      toast.success('All menu items deleted successfully!', { id: toastId });
+      setConfirmModal({ isOpen: false, type: 'reset', shopNameInput: '', loading: false });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to reset menu', { id: toastId });
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const executeDeleteAccount = async () => {
+    if (!owner?.id) return;
+    if (confirmModal.shopNameInput !== owner.shop_name) {
+      toast.error('Shop name confirmation mismatch!');
+      return;
+    }
+
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
+    const toastId = toast.loading('Deleting your account and data...');
+    try {
+      const { error } = await supabase
+        .from('owners')
+        .delete()
+        .eq('id', owner.id);
+
+      if (error) throw error;
+
+      toast.success('Account deleted successfully. Logging you out...', { id: toastId });
+      await logout();
+      window.location.href = '/';
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete account', { id: toastId });
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
+    }
   };
 
   return (
@@ -331,7 +409,7 @@ export default function SettingsPage() {
                         : 'border-border bg-surface-2 text-muted hover:border-accent/45 hover:text-[#f0f0f5]'
                     )}
                   >
-                    <span className="text-3xl">{lang.flag}</span>
+                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-lg">🌐</div>
                     <div>
                       <p className={cn('font-bold text-sm', ownerLang === lang.code ? 'text-accent' : 'text-[#f0f0f5]')}>
                         {lang.nativeLabel}
@@ -359,8 +437,8 @@ export default function SettingsPage() {
 
               <div className="space-y-4">
                 {[
-                  { title: t.resetMenu,      sub: t.resetMenuSub,      action: () => toast.error('⚠️ This would delete all items') },
-                  { title: t.deleteAccount,  sub: t.deleteAccountSub,  action: () => toast.error('⚠️ Account deletion requires email confirmation') },
+                  { title: t.resetMenu,      sub: t.resetMenuSub,      action: openResetConfirm },
+                  { title: t.deleteAccount,  sub: t.deleteAccountSub,  action: openDeleteConfirm },
                 ].map((d) => (
                   <div key={d.title} className="flex items-center justify-between flex-wrap gap-3 py-3 border-b border-danger/10 last:border-0">
                     <div>
@@ -426,6 +504,74 @@ export default function SettingsPage() {
               <Button variant="ghost" size="sm" onClick={() => setIsEmojiModalOpen(false)}>
                 Cancel
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Custom Confirmation / Prompt Modal for Danger Zone */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface border border-danger/25 rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-fade-up relative z-50 text-center">
+            {/* Warning Icon */}
+            <span className="w-14 h-14 rounded-full bg-danger/10 border border-danger/20 flex items-center justify-center text-3xl mx-auto mb-4 animate-pulse">
+              ⚠️
+            </span>
+
+            {/* Title */}
+            <h3 className="font-display font-black text-lg text-white leading-tight">
+              {confirmModal.type === 'reset' ? 'Reset Menu Items?' : 'Delete Store Account?'}
+            </h3>
+            
+            {/* Warning Text */}
+            <p className="text-muted text-xs mt-2.5 leading-relaxed">
+              {confirmModal.type === 'reset'
+                ? 'WARNING: This will permanently delete all menu items in your restaurant. This action is irreversible.'
+                : `CRITICAL WARNING: This will delete your shop profile "${owner?.shop_name}", menu items, order history, and QR scan tracking. This cannot be undone.`}
+            </p>
+
+            {/* Input Confirmation (For Delete only) */}
+            {confirmModal.type === 'delete' && (
+              <div className="text-left mt-4">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-2">
+                  Type your shop name <span className="text-danger font-mono font-bold">"{owner?.shop_name}"</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={confirmModal.shopNameInput}
+                  onChange={(e) => setConfirmModal({ ...confirmModal, shopNameInput: e.target.value })}
+                  placeholder={owner?.shop_name || "Shop Name"}
+                  className="w-full bg-bg/40 border border-border focus:border-danger rounded-xl px-3.5 py-3 text-xs text-[#f0f0f5] placeholder:text-white/20 outline-none transition-all font-sans"
+                />
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ isOpen: false, type: 'reset', shopNameInput: '', loading: false })}
+                className="flex-1 bg-transparent hover:bg-white/[0.03] border border-border text-muted hover:text-white font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
+                disabled={confirmModal.loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmModal.type === 'reset' ? executeResetMenu : executeDeleteAccount}
+                disabled={
+                  confirmModal.loading ||
+                  (confirmModal.type === 'delete' && confirmModal.shopNameInput !== owner?.shop_name)
+                }
+                className="flex-1 bg-danger hover:bg-danger/90 disabled:opacity-40 disabled:pointer-events-none text-bg font-black py-3 rounded-xl transition-all shadow-glow text-xs cursor-pointer border-none flex items-center justify-center font-sans"
+              >
+                {confirmModal.loading ? (
+                  <span className="w-3.5 h-3.5 border-2 border-bg border-t-transparent rounded-full animate-spin block" />
+                ) : confirmModal.type === 'reset' ? (
+                  'Reset Menu'
+                ) : (
+                  'Delete Account'
+                )}
+              </button>
             </div>
           </div>
         </div>

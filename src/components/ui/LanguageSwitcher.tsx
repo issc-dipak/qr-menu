@@ -59,7 +59,7 @@ export function LanguageSwitcher({
             color: primaryColor,
           }}
         >
-          <span className="text-base leading-none">{active.flag}</span>
+          <span className="text-base leading-none">🌐</span>
           <span className="hidden sm:inline">{active.nativeLabel}</span>
           <svg
             className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
@@ -92,7 +92,6 @@ export function LanguageSwitcher({
                     : { backgroundColor: 'transparent' }
                 }
               >
-                <span className="text-base">{lang.flag}</span>
                 <span>{lang.nativeLabel}</span>
                 {activeLang === lang.code && (
                   <span className="ml-auto text-[10px]" style={{ color: primaryColor }}>✓</span>
@@ -117,7 +116,7 @@ export function LanguageSwitcher({
         )}
       >
         <span className="text-base leading-none">🌐</span>
-        <span>{active.flag} {active.nativeLabel}</span>
+        <span>{active.nativeLabel}</span>
         <svg
           className={`w-3 h-3 ml-auto transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none"
@@ -142,7 +141,6 @@ export function LanguageSwitcher({
                   : 'text-muted hover:bg-white/4 hover:text-[#f0f0f5] bg-transparent'
               )}
             >
-              <span className="text-base">{lang.flag}</span>
               <span>{lang.nativeLabel}</span>
               <span className="text-xs text-muted/60 ml-1">({lang.label})</span>
               {activeLang === lang.code && <span className="ml-auto text-accent text-xs">✓</span>}

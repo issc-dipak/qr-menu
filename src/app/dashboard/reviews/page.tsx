@@ -60,8 +60,19 @@ export default function DashboardReviewsPage() {
     }
   };
 
-  const handleDeleteReview = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this customer feedback permanently?')) return;
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const triggerDeleteConfirm = (id: string) => {
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+
+  const handleDeleteReview = async () => {
+    if (!deleteId) return;
+    const id = deleteId;
+    setShowConfirm(false);
+    setDeleteId(null);
     
     setDeletingId(id);
     const toastId = toast.loading('Deleting feedback...');
@@ -203,7 +214,7 @@ export default function DashboardReviewsPage() {
 
                 {/* Moderate Delete button */}
                 <button
-                  onClick={() => handleDeleteReview(rev.id)}
+                  onClick={() => triggerDeleteConfirm(rev.id)}
                   disabled={deletingId === rev.id}
                   className="p-1.5 rounded-lg border border-danger/25 text-danger bg-danger/5 hover:bg-danger/10 active:scale-95 transition-all cursor-pointer flex-shrink-0 disabled:opacity-50"
                   title="Delete Review"
@@ -219,6 +230,65 @@ export default function DashboardReviewsPage() {
           </div>
         )}
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-all duration-300 animate-fade-in">
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes scaleUp {
+              from { transform: scale(0.95); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+            .animate-fade-in {
+              animation: fadeIn 0.2s ease-out forwards;
+            }
+            .animate-scale-up {
+              animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+          `}</style>
+          <div className="bg-surface/90 border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl shadow-black/50 transform scale-95 transition-all duration-300 animate-scale-up">
+            <div className="flex flex-col items-center text-center">
+              {/* Warning Icon */}
+              <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center text-red-500 mb-4">
+                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h3 className="font-display font-extrabold text-lg text-white mb-2">Delete Feedback?</h3>
+              
+              {/* Description */}
+              <p className="text-xs text-muted leading-relaxed font-light mb-6">
+                Are you sure you want to delete this customer feedback permanently? This action cannot be undone.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex items-center gap-3 w-full">
+                <button
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setDeleteId(null);
+                  }}
+                  className="flex-1 py-2.5 px-4 rounded-xl border border-white/10 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 active:scale-[0.98] transition-all text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteReview}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/20 active:scale-[0.98] transition-all text-xs font-semibold cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
