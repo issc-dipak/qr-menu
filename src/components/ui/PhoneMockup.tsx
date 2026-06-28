@@ -90,7 +90,7 @@ export function PhoneMockup({ shopName = 'Dipak Chai Corner', themeColor = '#00e
 
   return (
     <div 
-      className="w-64 md:w-72 h-[480px] md:h-[540px] bg-surface rounded-[36px] md:rounded-[40px] border-[3px] shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden mx-auto flex flex-col relative transition-all duration-300"
+      className="w-[230px] sm:w-[270px] h-[430px] sm:h-[500px] bg-surface rounded-[30px] sm:rounded-[36px] border-[3px] shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden mx-auto flex flex-col relative transition-all duration-300"
       style={{ borderColor: `${themeColor}40` }}
     >
       {/* Speaker/Camera Notch */}

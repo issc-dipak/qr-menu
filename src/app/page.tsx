@@ -1,14 +1,10 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { PLANS } from '@/constants';
-import { formatCurrency, cn } from '@/utils';
-import { PhoneMockup } from '@/components/ui/PhoneMockup';
+import { formatCurrency } from '@/utils';
 
 export default function HomePage() {
-  const [shopName, setShopName] = useState('Dipak Chai Corner');
-  const [themeColor, setThemeColor] = useState('#00e5a0');
   return (
     <>
       <Navbar />
@@ -39,66 +35,6 @@ export default function HomePage() {
           <Link href="/menu/dipak-creation" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
             See Live Demo →
           </Link>
-        </div>
-
-        {/* Interactive Customizer & Phone Mockup */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center justify-center mt-6 w-full max-w-4xl mx-auto">
-          {/* Customizer Panel */}
-          <div className="w-full max-w-sm p-6 bg-surface-2/30 border border-border/60 rounded-2xl shadow-xl flex flex-col gap-5 text-left backdrop-blur-sm animate-fade-up" style={{ animationDelay: '250ms' }}>
-            <div>
-              <p className="text-accent text-xs font-bold tracking-wider uppercase mb-1" style={{ color: themeColor }}>
-                ⚡ Try it Live
-              </p>
-              <h3 className="font-display font-bold text-lg text-white">Customize Your Menu</h3>
-              <p className="text-muted text-xs leading-relaxed mt-1">See how your digital menu will look to your customers instantly. Type your cafe name or change colors!</p>
-            </div>
-
-            <div className="h-px bg-border/40" />
-
-            {/* Shop Name Input */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Cafe / Shop Name</label>
-              <input
-                type="text"
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value || 'Dipak Chai Corner')}
-                placeholder="e.g. Dipak Chai Corner"
-                maxLength={22}
-                className="bg-surface-2 border border-border text-white text-sm px-4 py-2.5 rounded-xl focus:outline-none transition-all focus:border-accent"
-                style={{ borderColor: themeColor }}
-              />
-            </div>
-
-            {/* Color Selector */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Brand Theme Color</label>
-              <div className="flex gap-2.5 items-center mt-1">
-                {[
-                  { name: 'Emerald', hex: '#00e5a0' },
-                  { name: 'Warm Gold', hex: '#f59e0b' },
-                  { name: 'Spicy Red', hex: '#ef4444' },
-                  { name: 'Lounge Blue', hex: '#3b82f6' },
-                  { name: 'Amethyst Purple', hex: '#8b5cf6' },
-                ].map((color) => (
-                  <button
-                    key={color.hex}
-                    onClick={() => setThemeColor(color.hex)}
-                    className={cn(
-                      "w-7 h-7 rounded-full border transition-all cursor-pointer relative",
-                      themeColor === color.hex ? "border-white scale-110 shadow-glow" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
-                    )}
-                    style={{ backgroundColor: color.hex }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Phone Mockup */}
-          <div className="flex-shrink-0 animate-fade-up" style={{ animationDelay: '350ms' }}>
-            <PhoneMockup shopName={shopName} themeColor={themeColor} />
-          </div>
         </div>
       </section>
 
