@@ -162,7 +162,16 @@ export default function CustomerMenuPage({ params }: PageProps) {
         )
         .subscribe();
 
-      const [menuItems] = await Promise.all([getPublicMenuItems(ownerData.id), recordScan(ownerData.id)]);
+      // Record scan once per browser tab session (prevents duplicate counts on refresh & React strict-mode)
+      const sessionKey = `qrmenu_scanned_${ownerData.id}`;
+      const alreadyScanned = sessionStorage.getItem(sessionKey);
+      let scanPromise = Promise.resolve() as any;
+      if (!alreadyScanned) {
+        sessionStorage.setItem(sessionKey, 'true');
+        scanPromise = recordScan(ownerData.id);
+      }
+
+      const [menuItems] = await Promise.all([getPublicMenuItems(ownerData.id), scanPromise]);
       setOwner(ownerData);
       setItems(menuItems);
       setLoading(false);
