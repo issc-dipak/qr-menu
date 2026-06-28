@@ -1,45 +1,81 @@
 'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { PLANS } from '@/constants';
-import { formatCurrency } from '@/utils';
+import { formatCurrency, cn } from '@/utils';
 
 export default function HomePage() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '0px 0px -50px 0px',
+      }
+    );
+
+    const elements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <Navbar />
 
       {/* ── HERO ── */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 pt-24 md:pt-32 pb-16 relative overflow-hidden">
+        {/* Ambient Restaurant/Cafe Loop Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.06] pointer-events-none z-0"
+        >
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-pouring-hot-tea-in-a-cup-32860-large.mp4" type="video/mp4" />
+        </video>
+
         <div className="absolute w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full bg-accent blur-[100px] opacity-[0.08] -top-48 -left-36 pointer-events-none" />
         <div className="absolute w-[300px] md:w-[500px] h-[300px] md:h-[500px] rounded-full bg-accent-2 blur-[90px] opacity-[0.07] -bottom-36 -right-24 pointer-events-none" />
 
-        <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/25 text-accent px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 md:mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse flex-shrink-0" />
-          Now Live — 5 Shops Using QR-Menu
-        </div>
+        <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/25 text-accent px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-6 md:mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse flex-shrink-0" />
+            Now Live — 5 Shops Using QR-Menu
+          </div>
 
-        <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.04] tracking-tight max-w-4xl animate-fade-up">
-          Your Shop&apos;s Digital Menu,{' '}
-          <span className="gradient-text">Ready in 5 Minutes</span>
-        </h1>
+          <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.04] tracking-tight max-w-4xl animate-fade-up">
+            Your Shop&apos;s Digital Menu,{' '}
+            <span className="gradient-text">Ready in 5 Minutes</span>
+          </h1>
 
-        <p className="text-muted text-base md:text-lg max-w-sm md:max-w-lg mx-auto mt-5 mb-8 font-light leading-relaxed animate-fade-up" style={{ animationDelay: '150ms' }}>
-          No printing. No hassle. Create a beautiful QR menu — customers scan and see everything instantly.
-        </p>
+          <p className="text-muted text-base md:text-lg max-w-sm md:max-w-lg mx-auto mt-5 mb-8 font-light leading-relaxed animate-fade-up" style={{ animationDelay: '150ms' }}>
+            No printing. No hassle. Create a beautiful QR menu — customers scan and see everything instantly.
+          </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 w-full max-w-sm sm:max-w-none">
-          <Link href="/auth/signup" className="btn-primary text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl shadow-glow no-underline justify-center">
-            Start Free — No Credit Card 🚀
-          </Link>
-          <Link href="/menu/dipak-creation" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
-            See Live Demo →
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 w-full max-w-sm sm:max-w-none">
+            <Link href="/auth/signup" className="btn-primary text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl shadow-glow no-underline justify-center">
+              Start Free — No Credit Card 🚀
+            </Link>
+            <Link href="/menu/dipak-creation" target="_blank" className="btn-ghost text-sm md:text-base px-6 md:px-8 py-3 md:py-3.5 rounded-xl no-underline justify-center">
+              See Live Demo →
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ── STATS ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border-y border-border bg-surface">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border-y border-border bg-surface reveal">
         {[
           { n: '5 Cr+', l: 'Small Businesses in India' },
           { n: '5 Min', l: 'Setup Time' },
@@ -55,9 +91,9 @@ export default function HomePage() {
 
       {/* ── HOW IT WORKS ── */}
       <section id="how" className="max-w-5xl mx-auto px-4 py-16 md:py-24">
-        <span className="section-tag">How It Works</span>
-        <h2 className="font-display font-black text-3xl md:text-5xl mb-3">Simple &amp; Seamless Lifecycle</h2>
-        <p className="text-muted text-sm md:text-base max-w-md leading-relaxed font-light mb-10 md:mb-14">
+        <span className="section-tag reveal">How It Works</span>
+        <h2 className="font-display font-black text-3xl md:text-5xl mb-3 reveal">Simple &amp; Seamless Lifecycle</h2>
+        <p className="text-muted text-sm md:text-base max-w-md leading-relaxed font-light mb-10 md:mb-14 reveal">
           From printing QR codes to receiving real-time orders, here is how the magic happens.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -68,8 +104,14 @@ export default function HomePage() {
             { n: '04', icon: '🛎️', title: 'Ordering & Waiter Call', desc: 'Customers add items to cart, place orders instantly, or call the waiter directly with a single click.' },
             { n: '05', icon: '🔔', title: 'Live Alerts & Chimes', desc: 'Get real-time sound notifications on your dashboard when orders come in. Customers see live status updates.' },
             { n: '06', icon: '📊', title: 'Track Table Analytics', desc: 'Monitor active sessions, order conversion, popular dishes, and overall revenue from your panel.' },
-          ].map((step) => (
-            <div key={step.n} className="bg-surface border border-border rounded-card p-6 md:p-8 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+          ].map((step, idx) => (
+            <div 
+              key={step.n} 
+              className={cn(
+                "bg-surface border border-border rounded-card p-6 md:p-8 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group reveal",
+                idx % 3 === 0 ? "reveal-left" : idx % 3 === 2 ? "reveal-right" : "reveal"
+              )}
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <p className="font-display font-black text-4xl md:text-5xl text-accent/10 leading-none mb-3">{step.n}</p>
               <p className="text-2xl md:text-3xl mb-3">{step.icon}</p>
@@ -83,8 +125,8 @@ export default function HomePage() {
       {/* ── FEATURES ── */}
       <section id="features" className="bg-surface border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
-          <span className="section-tag">Features</span>
-          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Everything You Need.<br />Nothing You Don&apos;t.</h2>
+          <span className="section-tag reveal">Features</span>
+          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14 reveal">Everything You Need.<br />Nothing You Don&apos;t.</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
             {[
               { icon: '🔳', bg: 'bg-accent/10', title: 'Instant QR Code', desc: 'Get unique QR codes for your shop or individual tables automatically on signup.' },
@@ -97,7 +139,7 @@ export default function HomePage() {
               { icon: '🖼️', bg: 'bg-accent-2/10', title: 'Photo & Veg/Non-Veg Tags', desc: 'Add engaging food photos and color-coded tags (Veg/Non-Veg/Best Seller) to increase checkouts.' },
               { icon: '🔗', bg: 'bg-accent-3/10', title: 'Social Bio Link', desc: 'Get a permanent link to share on WhatsApp Business status, Instagram bio, or Google Maps.' },
             ].map((f) => (
-              <div key={f.title} className="bg-surface p-6 md:p-8 hover:bg-surface-2 transition-colors">
+              <div key={f.title} className="bg-surface p-6 md:p-8 hover:bg-surface-2 transition-colors reveal">
                 <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl ${f.bg} flex items-center justify-center text-lg md:text-xl mb-4 md:mb-5`}>{f.icon}</div>
                 <h3 className="font-display font-bold text-sm md:text-base mb-2">{f.title}</h3>
                 <p className="text-muted text-xs md:text-sm leading-relaxed">{f.desc}</p>
@@ -109,12 +151,19 @@ export default function HomePage() {
 
       {/* ── PRICING ── */}
       <section id="pricing" className="max-w-5xl mx-auto px-4 py-16 md:py-24">
-        <span className="section-tag">Pricing</span>
-        <h2 className="font-display font-black text-3xl md:text-5xl mb-3">Simple, Honest Pricing.</h2>
-        <p className="text-muted text-sm md:text-base max-w-md font-light mb-10 md:mb-14">Start free. Upgrade when ready. Cancel anytime.</p>
+        <span className="section-tag reveal">Pricing</span>
+        <h2 className="font-display font-black text-3xl md:text-5xl mb-3 reveal">Simple, Honest Pricing.</h2>
+        <p className="text-muted text-sm md:text-base max-w-md font-light mb-10 md:mb-14 reveal">Start free. Upgrade when ready. Cancel anytime.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 items-start">
-          {PLANS.map((plan) => (
-            <div key={plan.id} className={`bg-surface border rounded-card-lg p-6 md:p-8 relative transition-transform hover:-translate-y-1 ${plan.id === 'pro' ? 'border-accent shadow-[0_0_40px_rgba(0,229,160,0.12)]' : 'border-border'}`}>
+          {PLANS.map((plan, idx) => (
+            <div 
+              key={plan.id} 
+              className={cn(
+                "bg-surface border rounded-card-lg p-6 md:p-8 relative transition-transform hover:-translate-y-1 reveal",
+                plan.id === 'pro' ? 'border-accent shadow-[0_0_40px_rgba(0,229,160,0.12)]' : 'border-border',
+                idx === 0 ? "reveal-left" : idx === 2 ? "reveal-right" : "reveal"
+              )}
+            >
               {plan.id === 'pro' && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase whitespace-nowrap">
                   ⚡ Most Popular
@@ -146,8 +195,8 @@ export default function HomePage() {
       {/* ── TESTIMONIALS ── */}
       <div className="bg-surface border-y border-border">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
-          <span className="section-tag">Testimonials</span>
-          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14">Shop Owners Love It</h2>
+          <span className="section-tag reveal">Testimonials</span>
+          <h2 className="font-display font-black text-3xl md:text-5xl mb-10 md:mb-14 reveal">Shop Owners Love It</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {[
               {
@@ -186,8 +235,14 @@ export default function HomePage() {
                 biz: 'Radhika Beauty Studio, Solapur',
                 av: '👩'
               },
-            ].map((t) => (
-              <div key={t.name} className="bg-bg border border-border rounded-card p-5 md:p-6 hover:border-accent/30 transition-colors">
+            ].map((t, idx) => (
+              <div 
+                key={t.name} 
+                className={cn(
+                  "bg-bg border border-border rounded-card p-5 md:p-6 hover:border-accent/30 transition-colors reveal",
+                  idx % 3 === 0 ? "reveal-left" : idx % 3 === 2 ? "reveal-right" : "reveal"
+                )}
+              >
                 <p className="text-gold text-sm mb-3">★★★★★</p>
                 <p className="text-muted text-xs md:text-sm leading-relaxed italic mb-5">{t.q}</p>
                 <div className="flex items-center gap-3">
@@ -205,8 +260,8 @@ export default function HomePage() {
 
       {/* ── FAQ ── */}
       <section id="faq" className="max-w-3xl mx-auto px-4 py-16 md:py-24">
-        <span className="section-tag">FAQ</span>
-        <h2 className="font-display font-black text-3xl md:text-5xl mb-10">Questions? We Got You.</h2>
+        <span className="section-tag reveal">FAQ</span>
+        <h2 className="font-display font-black text-3xl md:text-5xl mb-10 reveal">Questions? We Got You.</h2>
         <div className="space-y-3">
           {[
             { q: 'Do customers need to download an app?', a: 'No! Customers just scan the QR with their phone camera — no app download needed. Opens directly in browser.' },
@@ -214,7 +269,7 @@ export default function HomePage() {
             { q: 'Can I use it for any type of shop?', a: 'Absolutely! Restaurants, salons, boutiques, tuition centers, electricians — any business with products or services.' },
             { q: 'Is the free plan really free?', a: 'Yes! Free plan is completely free — no credit card required. 10 menu items, 1 QR code, forever.' },
           ].map((faq) => (
-            <details key={faq.q} className="border border-border rounded-xl overflow-hidden group">
+            <details key={faq.q} className="border border-border rounded-xl overflow-hidden group reveal">
               <summary className="flex items-center justify-between p-4 md:p-5 cursor-pointer bg-surface hover:bg-surface-2 transition-colors text-sm md:text-base font-medium list-none">
                 {faq.q}
                 <span className="text-accent text-xs ml-3 flex-shrink-0 group-open:rotate-180 transition-transform">▼</span>
@@ -227,16 +282,18 @@ export default function HomePage() {
 
       {/* ── CTA ── */}
       <section className="text-center py-16 md:py-24 px-4 bg-gradient-to-br from-accent/5 to-accent-2/5 border-b border-accent/20">
-        <span className="section-tag">Get Started Today</span>
-        <h2 className="font-display font-black text-3xl md:text-5xl mb-4">
-          Your Shop Deserves a <span className="gradient-text">Digital Menu.</span>
-        </h2>
-        <p className="text-muted max-w-xs md:max-w-md mx-auto mb-8 md:mb-10 font-light leading-relaxed text-sm md:text-base">
-          Join shop owners who stopped printing menus.
-        </p>
-        <Link href="/auth/signup" className="btn-primary text-base md:text-lg px-8 md:px-10 py-3.5 md:py-4 rounded-xl shadow-glow-lg no-underline">
-          Create Your Free Menu Now →
-        </Link>
+        <div className="max-w-4xl mx-auto reveal">
+          <span className="section-tag">Get Started Today</span>
+          <h2 className="font-display font-black text-3xl md:text-5xl mb-4">
+            Your Shop Deserves a <span className="gradient-text">Digital Menu.</span>
+          </h2>
+          <p className="text-muted max-w-xs md:max-w-md mx-auto mb-8 md:mb-10 font-light leading-relaxed text-sm md:text-base">
+            Join shop owners who stopped printing menus.
+          </p>
+          <Link href="/auth/signup" className="btn-primary text-base md:text-lg px-8 md:px-10 py-3.5 md:py-4 rounded-xl shadow-glow-lg no-underline">
+            Create Your Free Menu Now →
+          </Link>
+        </div>
       </section>
 
       {/* ── FOOTER ── */}
