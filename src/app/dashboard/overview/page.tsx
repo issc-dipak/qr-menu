@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
+import { BellRing, ShoppingBag, Plus } from 'lucide-react';
 
 const AnalyticsChart = dynamic(() => import('@/components/features/analytics/AnalyticsChart'), {
   ssr: false,
@@ -129,7 +130,7 @@ export default function OverviewPage() {
   }, []);
 
   if (!data) {
-    return <div className="flex items-center justify-center min-h-[300px]">{t.loadingOverview}</div>;
+    return <div className="flex items-center justify-center min-h-[300px] text-muted text-sm">{t.loadingOverview}</div>;
   }
 
   const hour = new Date().getHours();
@@ -149,21 +150,24 @@ export default function OverviewPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-2xl">{greeting}, {owner?.name?.split(' ')[0]}! 👋</h1>
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">{greeting}, {owner?.name?.split(' ')[0]}! 👋</h1>
           <p className="text-muted text-sm mt-1">{t.overviewSubtitle}</p>
         </div>
         <Link href="/dashboard/menu">
-          <Button size="sm">{t.addItem}</Button>
+          <Button size="sm" leftIcon={<Plus className="w-4 h-4" />}>{t.addItem}</Button>
         </Link>
       </div>
+
       {/* Active Waiter Calls Alert Panel */}
       {waiterCalls.length > 0 && (
-        <div className="mb-8 p-6 bg-gradient-to-r from-gold/10 to-amber/5 border border-gold/30 rounded-3xl backdrop-blur-md relative overflow-hidden animate-fade-in">
-          <div className="absolute w-60 h-60 rounded-full bg-gold blur-[100px] opacity-[0.05] -top-12 -left-12 pointer-events-none" />
-          <div className="flex items-center gap-2.5 mb-5">
-            <span className="text-2xl animate-bounce">🛎️</span>
+        <div className="mb-8 p-6 bg-gradient-to-r from-amber-500/10 to-amber-600/[0.02] border border-amber-500/20 rounded-3xl backdrop-blur-md relative overflow-hidden animate-fade-in">
+          <div className="absolute w-60 h-60 rounded-full bg-amber-500 blur-[100px] opacity-[0.05] -top-12 -left-12 pointer-events-none" />
+          <div className="flex items-center gap-3 mb-5">
+            <span className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 flex-shrink-0 animate-pulse">
+              <BellRing className="w-5 h-5" />
+            </span>
             <div>
-              <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.activeWaiterRequests}</h2>
+              <h2 className="font-display font-bold text-base text-[#f0f0f5] tracking-tight">{t.activeWaiterRequests}</h2>
               <p className="text-[11px] text-muted">{t.activeWaiterSubtitle}</p>
             </div>
           </div>
@@ -171,18 +175,18 @@ export default function OverviewPage() {
             {waiterCalls.map((call) => (
               <div
                 key={call.id}
-                className="bg-surface border border-border rounded-xl p-4 flex items-center justify-between shadow-lg hover:border-gold/30 transition-all"
+                className="bg-surface border border-border rounded-xl p-4 flex items-center justify-between shadow-sm hover:border-amber-500/30 transition-all duration-300"
               >
                 <div>
-                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">{t.table}</span>
-                  <span className="font-display font-extrabold text-lg text-gold">{call.table_number}</span>
+                  <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">{t.table}</span>
+                  <span className="font-display font-bold text-lg text-amber-500">{call.table_number}</span>
                   <span className="text-[9px] text-muted block mt-0.5">
                     {new Date(call.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <button
                   onClick={() => resolveWaiterCall(call.id)}
-                  className="bg-gold/10 hover:bg-gold border border-gold/20 hover:border-gold text-gold hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer font-sans"
+                  className="bg-amber-500/10 hover:bg-amber-500 border border-amber-500/20 hover:border-amber-500 text-amber-500 hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer font-sans"
                 >
                   {t.done}
                 </button>
@@ -205,43 +209,48 @@ export default function OverviewPage() {
         {/* Weekly Chart */}
         <div className="card">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="font-display font-bold">{t.weeklyScans}</h3>
+            <h3 className="font-display font-semibold text-white tracking-tight">{t.weeklyScans}</h3>
             <span className="badge badge-green text-[10px]">{t.live}</span>
           </div>
           <AnalyticsChart data={data.weeklySeries} />
         </div>
 
         {/* Recent Orders Tracker */}
-        <div className="card">
-          <h3 className="font-display font-bold mb-4">{t.recentOrders}</h3>
-          <div className="space-y-3">
-            {recentOrders.length === 0 ? (
-              <p className="text-xs text-muted text-center py-6">{t.noRecentOrders}</p>
-            ) : (
-              recentOrders.map((o) => (
-                <div key={o.id} className="flex flex-col gap-1.5 py-3 border-b border-border/50 last:border-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold bg-accent-2/15 text-accent-2 px-2 py-0.5 rounded-full">{o.table}</span>
-                    <span className="text-[10px] text-muted">{o.date?.split(',')[1] || t.justNow}</span>
-                  </div>
-                  <p className="text-xs font-medium text-[#f0f0f5]">{o.items}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs font-bold text-accent">₹{o.total}</span>
-                    <button
-                      onClick={() => o.status !== 'completed' && toggleOrderStatus(o.id)}
-                      disabled={o.status === 'completed'}
-                      className={`text-[10px] px-2 py-1 rounded font-bold border transition-all cursor-pointer ${
-                        o.status === 'completed'
-                          ? 'bg-accent/10 border-accent/20 text-accent cursor-default'
-                          : 'bg-surface border-border text-muted hover:border-accent'
-                      }`}
-                    >
-                      {o.status === 'completed' ? t.completed : t.markComplete}
-                    </button>
-                  </div>
+        <div className="card flex flex-col justify-between">
+          <div>
+            <h3 className="font-display font-semibold text-white tracking-tight mb-4">{t.recentOrders}</h3>
+            <div className="space-y-3">
+              {recentOrders.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <ShoppingBag className="w-8 h-8 text-muted/30 mb-2" />
+                  <p className="text-xs text-muted font-medium">{t.noRecentOrders}</p>
                 </div>
-              ))
-            )}
+              ) : (
+                recentOrders.map((o) => (
+                  <div key={o.id} className="flex flex-col gap-1.5 py-3 border-b border-border/50 last:border-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold bg-accent-2/15 text-accent-2 border border-accent-2/10 px-2 py-0.5 rounded-full">{o.table}</span>
+                      <span className="text-[10px] text-muted">{o.date?.split(',')[1] || t.justNow}</span>
+                    </div>
+                    <p className="text-xs font-medium text-[#f0f0f5]">{o.items}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs font-bold text-accent">₹{o.total}</span>
+                      <button
+                        onClick={() => o.status !== 'completed' && toggleOrderStatus(o.id)}
+                        disabled={o.status === 'completed'}
+                        className={`text-[10px] px-2.5 py-1 rounded font-bold border transition-all cursor-pointer ${
+                          o.status === 'completed'
+                            ? 'bg-accent/10 border-accent/20 text-accent cursor-default'
+                            : 'bg-surface border-border text-muted hover:border-accent hover:text-[#f0f0f5]'
+                        }`}
+                      >
+                        {o.status === 'completed' ? t.completed : t.markComplete}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

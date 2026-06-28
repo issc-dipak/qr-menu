@@ -217,7 +217,8 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
   // Read theme colors
   const primaryColor = owner.theme_settings?.primaryColor || '#00e5a0';
-  const customFont = owner.theme_settings?.fontFamily || 'Syne';
+  let customFont = owner.theme_settings?.fontFamily || 'Plus Jakarta Sans';
+  if (customFont === 'Syne') customFont = 'Plus Jakarta Sans';
 
   return (
     <div className="min-h-screen bg-[#0d1a12] pb-24" style={{ fontFamily: customFont }}>

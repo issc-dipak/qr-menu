@@ -8,6 +8,7 @@ import { formatCurrency } from '@/utils';
 import { cn } from '@/utils';
 import toast from 'react-hot-toast';
 import { createSubscription } from '@/services/subscriptionService';
+import { Check, X, CreditCard } from 'lucide-react';
 
 export default function BillingPage() {
   const { owner } = useAuthStore();
@@ -71,7 +72,7 @@ export default function BillingPage() {
         contact: owner.shop_phone || '',
       },
       theme: {
-        color: '#00e5a0',
+        color: '#6366f1',
       },
     };
 
@@ -83,19 +84,21 @@ export default function BillingPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display font-black text-2xl">{t.billingTitle}</h1>
+        <h1 className="font-display font-bold text-2xl text-white tracking-tight flex items-center gap-2">
+          <CreditCard className="w-6 h-6 text-accent" /> {t.billingTitle}
+        </h1>
         <p className="text-muted text-sm mt-1">{t.billingSubtitle}</p>
       </div>
 
       {/* Current Plan Banner */}
       <div className="card mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <p className="text-xs text-muted mb-1 uppercase tracking-wider">{t.currentPlan}</p>
+          <p className="text-[10px] font-bold text-muted mb-1.5 uppercase tracking-wider">{t.currentPlan}</p>
           <div className="flex items-center gap-3">
-            <p className="font-display font-black text-2xl">{currentPlan.name} {t.plan}</p>
+            <p className="font-display font-bold text-2xl text-white">{currentPlan.name} {t.plan}</p>
             <Badge variant="green">{t.active}</Badge>
           </div>
-          <p className="text-muted text-sm mt-1">
+          <p className="text-muted text-sm mt-2 font-medium">
             {currentPlan.maxItems === Infinity ? t.unlimited : `${t.upTo} ${currentPlan.maxItems}`} {t.menuItemsCount} · {currentPlan.maxQrCodes} QR
           </p>
         </div>
@@ -115,40 +118,41 @@ export default function BillingPage() {
             <div
               key={plan.id}
               className={cn(
-                'bg-surface border rounded-card-lg p-7 relative transition-transform hover:-translate-y-1',
-                plan.id === 'pro' ? 'border-accent shadow-[0_0_40px_rgba(0,229,160,0.1)]' : 'border-border',
+                'bg-surface border rounded-card-lg p-7 relative transition-all duration-300 hover:border-border-2 hover:bg-surface-2',
+                plan.id === 'pro' ? 'border-accent shadow-[0_0_20px_rgba(99,102,241,0.1)]' : 'border-border',
                 isCurrent && 'ring-1 ring-accent/30'
               )}
             >
               {plan.id === 'pro' && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase whitespace-nowrap">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase whitespace-nowrap shadow-sm">
                   {t.recommended}
                 </span>
               )}
 
-              <p className="font-display font-bold mb-3">{plan.name}</p>
-              <p className={cn(
-                'font-display font-black text-4xl leading-none mb-1',
-                plan.id === 'pro' ? 'text-accent' : plan.id === 'business' ? 'text-accent-2' : ''
-              )}>
+              <p className="font-display font-bold text-lg text-white mb-2">{plan.name}</p>
+              <p className="font-display font-bold text-3xl leading-none text-white mb-1.5">
                 {plan.price === 0 ? '₹0' : formatCurrency(plan.price)}
                 <span className="text-sm font-normal text-muted">{t.perMonth}</span>
               </p>
-              <p className="text-muted text-sm mb-5">{planDesc}</p>
+              <p className="text-muted text-xs mb-5 font-medium">{planDesc}</p>
 
               <hr className="border-border mb-5" />
 
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-3.5 mb-6">
                 {plan.features.map((f) => (
-                  <li key={f.label} className={cn('flex items-center gap-2 text-sm', f.included ? 'text-muted' : 'text-muted/40')}>
-                    <span className={f.included ? 'text-accent' : 'text-danger'}>{f.included ? '✓' : '✕'}</span>
-                    {f.label}
+                  <li key={f.label} className={cn('flex items-start gap-2.5 text-xs font-medium', f.included ? 'text-muted' : 'text-muted/40')}>
+                    {f.included ? (
+                      <Check className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <X className="w-3.5 h-3.5 text-danger flex-shrink-0 mt-0.5" />
+                    )}
+                    <span className="leading-tight">{f.label}</span>
                   </li>
                 ))}
               </ul>
 
               {isCurrent ? (
-                <button disabled className="w-full py-3 rounded-xl border border-border text-muted text-sm opacity-50 cursor-not-allowed">
+                <button disabled className="w-full py-2.5 rounded-xl border border-border text-muted text-xs font-semibold opacity-50 cursor-not-allowed bg-transparent">
                   {t.currentPlanBtn}
                 </button>
               ) : (
@@ -168,7 +172,7 @@ export default function BillingPage() {
 
       {/* FAQ */}
       <div className="card mt-6">
-        <h3 className="font-display font-bold mb-4">{t.billingFaq}</h3>
+        <h3 className="font-display font-semibold text-white tracking-tight mb-4">{t.billingFaq}</h3>
         <div className="space-y-4">
           {[
             { q: t.faqCancelQ,  a: t.faqCancelA  },
@@ -176,7 +180,7 @@ export default function BillingPage() {
             { q: t.faqQrQ,      a: t.faqQrA      },
           ].map((faq) => (
             <div key={faq.q} className="border-b border-border/50 last:border-0 pb-4 last:pb-0">
-              <p className="font-medium text-sm mb-1">{faq.q}</p>
+              <p className="font-semibold text-sm mb-1 text-[#f0f0f5]">{faq.q}</p>
               <p className="text-muted text-sm">{faq.a}</p>
             </div>
           ))}

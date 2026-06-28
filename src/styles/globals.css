@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,9 +14,9 @@
 
   body {
     @apply bg-bg text-[#f0f0f5] font-sans antialiased overflow-x-hidden;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
   }
-  h1,h2,h3,h4 { @apply font-display; }
+  h1,h2,h3,h4 { @apply font-display tracking-tight; }
 }
 
 @layer components {
@@ -26,30 +26,33 @@
     100% { background-position: 0% 50%; }
   }
   .gradient-text { 
-    @apply bg-gradient-to-r from-accent via-accent-2 to-accent bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-accent via-accent-3 to-accent bg-clip-text text-transparent;
     background-size: 200% auto;
     animation: gradient-shimmer 4s ease infinite;
   }
-  .card { @apply bg-surface border border-border rounded-card p-4 md:p-6; }
-  .card-hover { @apply transition-all duration-300 hover:border-accent/40 hover:-translate-y-1; }
+  .card { 
+    @apply bg-surface border border-border rounded-card p-4 md:p-6 shadow-sm;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  }
+  .card-hover { @apply transition-all duration-300 hover:border-border-2 hover:bg-surface-2 hover:shadow-md; }
   .input-base {
     @apply w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 text-[#f0f0f5]
-           placeholder:text-muted text-sm outline-none transition-all duration-200
-           focus:border-accent focus:shadow-[0_0_0_3px_rgba(0,229,160,0.1)];
+           placeholder:text-muted/60 text-sm outline-none transition-all duration-200
+           focus:border-accent focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)];
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-bg rounded-lg
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg
            font-semibold text-sm transition-all duration-200 cursor-pointer
-           hover:-translate-y-0.5 hover:shadow-glow active:translate-y-0 whitespace-nowrap;
+           hover:bg-accent/90 hover:shadow-glow active:scale-[0.98] whitespace-nowrap;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[#f0f0f5]
            border border-border rounded-lg font-medium text-sm transition-all duration-200
-           cursor-pointer hover:border-accent hover:bg-accent/5 whitespace-nowrap;
+           cursor-pointer hover:border-border-2 hover:bg-white/5 whitespace-nowrap;
   }
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-danger/10 text-danger
-           border border-danger/30 rounded-lg font-medium text-sm transition-all duration-200
+           border border-danger/20 rounded-lg font-medium text-sm transition-all duration-200
            cursor-pointer hover:bg-danger/20 whitespace-nowrap;
   }
   .badge { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase; }
@@ -61,7 +64,7 @@
            transition-all duration-200 cursor-pointer border-none bg-transparent text-left
            font-sans hover:bg-white/5 hover:text-[#f0f0f5];
   }
-  .sidebar-item.active { @apply bg-accent/10 text-accent; }
+  .sidebar-item.active { @apply bg-accent/10 text-accent font-semibold; }
   .section-tag { @apply block text-xs font-bold tracking-[0.1em] uppercase text-accent mb-3; }
 }
 

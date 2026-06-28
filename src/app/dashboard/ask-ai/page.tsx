@@ -4,6 +4,7 @@ import { useAuthStore, useMenuStore, useAnalyticsStore } from '@/store';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Sparkles, Send } from 'lucide-react';
 
 export default function AskAiPage() {
   const { owner } = useAuthStore();
@@ -17,7 +18,7 @@ export default function AskAiPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const getAiGreeting = (name: string, translationObj: any) => {
-    const hello = (translationObj.aiHello || 'Hello {name}! 👋 I am your **QR-Menu AI Assistant**.')
+    const hello = (translationObj.aiHello || 'Hello {name}! I am your **QR-Menu AI Assistant**.')
       .replace('{name}', name);
     return `${hello}
 - *${translationObj.aiQuery1 || 'How can I get more scans?'}*
@@ -182,7 +183,7 @@ export default function AskAiPage() {
 - **टीप**: वर्णन १२० शब्दांपेक्षा कमी ठेवा, आणि चव दर्शवणारे शब्द (उदा. *कुरकुरीत, सुगंधी, थंडगार, गोड*) वापरा.`;
         } else if (lang === 'gu') {
           response = `✍️ **AI મેનૂ કોપીરાઈટર**:
-અહીં એક પ્રીમિયમ ડિસ્ક્રિપ્શન ટેમ્પલેટ છે જેનો उपयोग તમે તમારી આઇટમ (જેમ કે **${sampleItem}**) માટે કરી શકો છો:
+અહીં એક પ્રીમિયમ ડિસ્ક્રિપ્શન ટેમ્પલેટ છે જેનો ઉપયોગ તમે તમારી આઇટમ (જેમ કે **${sampleItem}**) માટે કરી શકો છો:
 > *"સ્થાનિક રીતે મેળવેલા પ્રીમિયમ ઘટકોનો ઉપયોગ કરીને તાજું બનાવેલ. તમારી ઇચ્છા તૃપ્ત કરવા માટે કાળજીપૂર્વક તૈયાર કરેલ સંતુલિત સ્વાદ. ગરમ ગરમ માણો! 🌟"*
 - **ટિપ**: વર્ણનો 120 અક્ષરોથી ઓછા રાખો, સ્વાદસભર શબ્દો (દા.ત., *કુરકુરીત, સુગંધિત, ઠંડક આપનાર, મીઠું*) પર ધ્યાન કેન્દ્રિત કરો.`;
         } else {
@@ -207,7 +208,7 @@ Here is a premium description template you can use for your items (like **${samp
 2. चांगल्या दर्जाच्या फोटोंसह तुमच्या सर्वाधिक पसंतीचे आयटम प्रमोट करणे.
 3. ग्राहक कधी जास्त येतात हे पाहण्यासाठी दर आठवड्याला **विश्लेषण** पान तपासणे.
 
-तुम्हाला एखाद्या विशिष्ट पदार्थाचे वर्णन किंवा मार्केटिंग पोस्टरची कल्पना हवी असल्यास मला नक्की सांगा!`;
+ तुम्हाला एखाद्या विशिष्ट पदार्थाचे वर्णन किंवा मार्केटिंग पोस्टरची कल्पना हवी असल्यास मला नक्की सांगा!`;
         } else if (lang === 'gu') {
           response = `💡 **QR-Menu AI સલાહકાર**:
 આ એક સરસ પ્રશ્ન છે! **${itemCount} આઇટમ્સ** સાથેના **${shopName}** જેવા **${shopCategory}** માટે, હું ભલામણ કરું છું કે તમે આના પર ધ્યાન કેન્દ્રિત કરો:
@@ -236,7 +237,9 @@ Is there a specific menu item description or marketing poster idea you would lik
     <div className="flex flex-col h-[calc(100vh-210px)] md:h-[calc(100vh-190px)]">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="font-display font-black text-2xl">{t.askAiTitle || 'Ask AI'}</h1>
+        <h1 className="font-display font-bold text-2xl text-white tracking-tight flex items-center gap-2">
+          <Sparkles className="w-6 h-6 text-accent" /> {t.askAiTitle || 'Ask AI'}
+        </h1>
         <p className="text-muted text-sm mt-1">{t.askAiSubtitle || 'Get business insights, custom menu copywriting, and growth tips tailored to your shop.'}</p>
       </div>
 
@@ -252,7 +255,7 @@ Is there a specific menu item description or marketing poster idea you would lik
               <div
                 className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-accent text-bg font-medium rounded-tr-none'
+                    ? 'bg-accent text-white font-medium rounded-tr-none'
                     : 'bg-surface-2 border border-border text-[#f0f0f5] rounded-tl-none whitespace-pre-line'
                 }`}
               >
@@ -282,8 +285,8 @@ Is there a specific menu item description or marketing poster idea you would lik
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
           />
-          <Button type="submit" disabled={loading || !input.trim()}>
-            {t.askAiSend || 'Send'} ⚡
+          <Button type="submit" disabled={loading || !input.trim()} rightIcon={<Send className="w-4 h-4" />}>
+            {t.askAiSend || 'Send'}
           </Button>
         </form>
       </div>

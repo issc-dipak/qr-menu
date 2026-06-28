@@ -22,21 +22,22 @@ interface KpiCardProps {
   color?: 'green' | 'blue' | 'purple' | 'gold';
 }
 
-const colorMap = {
-  green:  'text-accent',
-  blue:   'text-accent-2',
-  purple: 'text-accent-3',
-  gold:   'text-gold',
+const colorBorderMap = {
+  green:  'border-l-accent',
+  blue:   'border-l-accent-2',
+  purple: 'border-l-accent-3',
+  gold:   'border-l-gold',
 };
 
 export function KpiCard({ label, value, trend, trendUp, color = 'green' }: KpiCardProps) {
   return (
-    <div className="card">
-      <p className="text-xs text-muted font-medium mb-2">{label}</p>
-      <p className={cn('font-display text-3xl font-black leading-none', colorMap[color])}>{value}</p>
+    <div className={cn("card relative overflow-hidden pl-5 border-l-4", colorBorderMap[color])}>
+      <p className="text-[11px] text-muted font-bold uppercase tracking-wider mb-2">{label}</p>
+      <p className="font-display text-2xl sm:text-3xl font-bold leading-none text-white">{value}</p>
       {trend && (
-        <p className={cn('text-xs mt-1.5', trendUp ? 'text-accent' : 'text-danger')}>
-          {trendUp ? '↑' : '↓'} {trend}
+        <p className={cn('text-[11px] mt-2 flex items-center gap-0.5 font-medium', trendUp ? 'text-accent' : 'text-danger')}>
+          <span>{trendUp ? '↑' : '↓'}</span>
+          <span>{trend}</span>
         </p>
       )}
     </div>

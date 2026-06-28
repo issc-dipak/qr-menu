@@ -9,18 +9,18 @@ export default function AnalyticsChart({ data }: AnalyticsChartProps) {
   return (
     <ResponsiveContainer width="100%" height={180}>
       <BarChart data={data} barSize={32}>
-        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#7a7a92', fontSize: 12 }} />
+        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#8e8ea8', fontSize: 11 }} />
         <YAxis hide />
         <Tooltip
-          contentStyle={{ background: '#111118', border: '1px solid #2a2a38', borderRadius: 8, fontSize: 12 }}
+          contentStyle={{ background: '#18181b', border: '1px solid #27272a', borderRadius: 8, fontSize: 12 }}
           labelStyle={{ color: '#f0f0f5' }}
-          cursor={{ fill: 'rgba(0,229,160,0.05)' }}
+          cursor={{ fill: 'rgba(99,102,241,0.05)' }}
         />
         <Bar dataKey="scans" fill="url(#grad2)" radius={[4, 4, 0, 0]} />
         <defs>
           <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#00e5a0" />
-            <stop offset="100%" stopColor="#00e5a0" stopOpacity={0.35} />
+            <stop offset="0%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.3} />
           </linearGradient>
         </defs>
       </BarChart>

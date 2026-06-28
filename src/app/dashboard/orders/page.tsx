@@ -10,6 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import type { WaiterCall } from '@/types/supabase';
 import { getShopOrders, updateOrderStatus } from '@/services/orderService';
+import { DollarSign, Package, CheckCircle2, Clock, Search, FileText, Download, BellRing } from 'lucide-react';
 
 interface OrderRecord {
   id: string;
@@ -716,11 +717,14 @@ export default function OrdersHistoryPage() {
     <div>
       {/* Active Waiter Calls Alert Panel */}
       {waiterCalls.length > 0 && (
-        <div className="mb-8 p-4 sm:p-6 bg-white/[0.03] border border-accent/25 rounded-2xl animate-fade-in backdrop-blur-md">
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-xl animate-bounce">🛎️</span>
+        <div className="mb-8 p-6 bg-gradient-to-r from-amber-500/10 to-amber-600/[0.02] border border-amber-500/20 rounded-2xl animate-fade-in backdrop-blur-md relative overflow-hidden">
+          <div className="absolute w-60 h-60 rounded-full bg-amber-500 blur-[100px] opacity-[0.05] -top-12 -left-12 pointer-events-none" />
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 flex-shrink-0 animate-pulse">
+              <BellRing className="w-5 h-5" />
+            </span>
             <div>
-              <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.activeWaiterCalls}</h2>
+              <h2 className="font-display font-semibold text-base text-[#f0f0f5] tracking-tight">{t.activeWaiterCalls}</h2>
               <p className="text-[11px] text-muted">{t.activeWaiterCallsDesc}</p>
             </div>
           </div>
@@ -728,18 +732,18 @@ export default function OrdersHistoryPage() {
             {waiterCalls.map((call) => (
               <div
                 key={call.id}
-                className="bg-surface border border-border/80 rounded-xl p-4 flex items-center justify-between shadow-lg hover:border-accent/30 transition-all"
+                className="bg-surface border border-border rounded-xl p-4 flex items-center justify-between shadow-sm hover:border-amber-500/30 transition-all duration-300"
               >
                 <div>
-                  <span className="text-xs text-muted font-sans uppercase tracking-wider block">{t.table}</span>
-                  <span className="font-display font-extrabold text-lg text-accent">{call.table_number}</span>
+                  <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">{t.table}</span>
+                  <span className="font-display font-bold text-lg text-amber-500">{call.table_number}</span>
                   <span className="text-[9px] text-muted block mt-0.5">
                     {new Date(call.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <button
                   onClick={() => resolveWaiterCall(call.id)}
-                  className="bg-accent/15 hover:bg-accent border border-accent/20 text-accent hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer"
+                  className="bg-amber-500/15 hover:bg-amber-500 border border-amber-500/20 text-amber-500 hover:text-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer"
                 >
                   {t.done}
                 </button>
@@ -752,17 +756,17 @@ export default function OrdersHistoryPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/40 pb-6">
         <div>
-          <h1 className="font-display font-black text-2xl">{t.ordersHistoryTitle}</h1>
+          <h1 className="font-display font-bold text-2xl text-white tracking-tight">{t.ordersHistoryTitle}</h1>
           <p className="text-muted text-sm mt-1">{t.ordersHistorySubtitle}</p>
         </div>
       </div>
 
       {/* Analytics, KPIs, and Charts Section */}
-      <div className="mb-8 bg-white/[0.02] border border-border/80 p-4 sm:p-5 rounded-3xl backdrop-blur-md w-full overflow-hidden">
+      <div className="mb-8 bg-white/[0.02] border border-border p-4 sm:p-5 rounded-3xl backdrop-blur-md w-full overflow-hidden">
         {/* Analytics Card Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border/30">
           <div>
-            <h2 className="font-display font-black text-base text-[#f0f0f5]">{t.salesPerformance}</h2>
+            <h2 className="font-display font-semibold text-base text-white tracking-tight">{t.salesPerformance}</h2>
             <p className="text-[10px] text-muted">{t.salesPerformanceSub}</p>
           </div>
 
@@ -780,7 +784,7 @@ export default function OrdersHistoryPage() {
                 onClick={() => setDateFilter(f.value)}
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border-none font-sans cursor-pointer flex-1 sm:flex-none text-center flex-shrink-0',
-                  dateFilter === f.value ? 'bg-[#f0f0f5]/10 text-[#f0f0f5]' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
+                  dateFilter === f.value ? 'bg-white/10 text-white' : 'bg-transparent text-muted hover:text-white'
                 )}
               >
                 {f.label}
@@ -792,33 +796,49 @@ export default function OrdersHistoryPage() {
         {/* KPIs Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {/* Revenue Card */}
-          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
-            <span className="text-xl">💰</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.totalRevenue}</p>
-            <p className="text-base sm:text-lg font-display font-black text-accent mt-1 truncate" style={{ color: primaryColor }} title={`₹${stats.totalRevenue.toLocaleString('en-IN')}`}>
+          <div className="p-3 sm:p-4 bg-surface border border-border rounded-xl flex flex-col justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                <DollarSign className="w-4 h-4" />
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{t.totalRevenue}</p>
+            </div>
+            <p className="text-lg sm:text-xl font-display font-bold text-white mt-3 truncate" title={`₹${stats.totalRevenue.toLocaleString('en-IN')}`}>
               ₹{stats.totalRevenue.toLocaleString('en-IN')}
             </p>
           </div>
 
           {/* Total Orders Card */}
-          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
-            <span className="text-xl">📦</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.totalOrdersLabel}</p>
-            <p className="text-base sm:text-lg font-display font-black text-[#f0f0f5] mt-1">{stats.totalOrders}</p>
+          <div className="p-3 sm:p-4 bg-surface border border-border rounded-xl flex flex-col justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-accent-2/10 border border-accent-2/20 flex items-center justify-center text-accent-2">
+                <Package className="w-4 h-4" />
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{t.totalOrdersLabel}</p>
+            </div>
+            <p className="text-lg sm:text-xl font-display font-bold text-white mt-3">{stats.totalOrders}</p>
           </div>
 
           {/* Completed Orders Card */}
-          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
-            <span className="text-xl">✅</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.completedLabel}</p>
-            <p className="text-base sm:text-lg font-display font-black text-accent mt-1" style={{ color: '#00e5a0' }}>{stats.completedOrders}</p>
+          <div className="p-3 sm:p-4 bg-surface border border-border rounded-xl flex flex-col justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                <CheckCircle2 className="w-4 h-4" />
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{t.completedLabel}</p>
+            </div>
+            <p className="text-lg sm:text-xl font-display font-bold text-emerald-500 mt-3">{stats.completedOrders}</p>
           </div>
 
           {/* Pending Orders Card */}
-          <div className="p-3 sm:p-4 bg-surface border border-border/60 rounded-xl">
-            <span className="text-xl">🛎️</span>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mt-1.5">{t.pendingServiceLabel}</p>
-            <p className="text-base sm:text-lg font-display font-black text-gold mt-1">{stats.pendingOrders}</p>
+          <div className="p-3 sm:p-4 bg-surface border border-border rounded-xl flex flex-col justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
+                <Clock className="w-4 h-4" />
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{t.pendingServiceLabel}</p>
+            </div>
+            <p className="text-lg sm:text-xl font-display font-bold text-gold mt-3">{stats.pendingOrders}</p>
           </div>
         </div>
 
@@ -852,14 +872,14 @@ export default function OrdersHistoryPage() {
       </div>
 
       {/* Table & Search Header */}
-      <div className="mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white/[0.01] border border-border/40 p-3.5 rounded-2xl">
+      <div className="mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white/[0.01] border border-border p-3.5 rounded-2xl">
         {/* Search Input */}
-        <div className="flex items-center bg-surface border border-border rounded-xl px-3.5 py-2 gap-2 flex-1 w-full lg:max-w-md">
-          <span className="text-muted text-xs">🔍</span>
+        <div className="flex items-center bg-surface border border-border rounded-xl px-3.5 py-2 gap-2 flex-1 w-full lg:max-w-md focus-within:border-accent/40 transition-colors">
+          <Search className="text-muted w-4 h-4 flex-shrink-0" />
           <input
             type="text"
             placeholder={t.searchOrdersPlaceholder}
-            className="bg-transparent outline-none text-xs flex-1 text-[#f0f0f5] placeholder:text-muted"
+            className="bg-transparent outline-none text-xs flex-1 text-[#f0f0f5] placeholder:text-muted/60"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -901,13 +921,13 @@ export default function OrdersHistoryPage() {
               onClick={exportToCSV}
               className="flex-1 sm:flex-none justify-center bg-surface border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
             >
-              📊 {t.exportCsv}
+              <Download className="w-3.5 h-3.5" /> {t.exportCsv}
             </button>
             <button
               onClick={exportToPDF}
-              className="flex-1 sm:flex-none justify-center bg-[#f0f0f5]/5 border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
+              className="flex-1 sm:flex-none justify-center bg-surface border border-border hover:border-accent/40 text-muted hover:text-white px-3.5 py-1.5 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1.5 font-sans"
             >
-              📄 {t.downloadPdf}
+              <FileText className="w-3.5 h-3.5" /> {t.downloadPdf}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useAuthStore, useUIStore } from '@/store';
+import { QrCode } from 'lucide-react';
 
 export function DashboardHeader() {
   const { owner } = useAuthStore();
@@ -15,18 +16,22 @@ export function DashboardHeader() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <Link href="/" className="flex items-center gap-2 font-display font-black text-base text-[#f0f0f5] no-underline">
-          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-xs flex-shrink-0">🔳</span>
-          <span className="hidden sm:block">QR-Menu</span>
+        <Link href="/" className="flex items-center gap-2 font-display font-semibold text-base text-[#f0f0f5] no-underline">
+          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 shadow-sm shadow-accent/20">
+            <QrCode className="w-4 h-4 text-white" />
+          </span>
+          <span className="hidden sm:block tracking-tight">QR-Menu</span>
         </Link>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-xs text-muted hidden md:block truncate max-w-[160px]">
-          {owner?.shop_avatar} {owner?.shop_name}
-        </span>
-        <Link href={owner?.shop_slug ? `/menu/${owner.shop_slug}` : '#'} target="_blank" className="btn-ghost text-xs px-3 py-1.5 rounded-lg no-underline">
-          <span className="hidden sm:inline">👁 Preview</span>
+        {owner?.shop_name && (
+          <span className="text-xs text-muted font-medium hidden md:block truncate max-w-[160px]">
+            {owner?.shop_avatar} {owner?.shop_name}
+          </span>
+        )}
+        <Link href={owner?.shop_slug ? `/menu/${owner.shop_slug}` : '#'} target="_blank" className="btn-ghost text-xs px-3 py-1.5 rounded-lg no-underline flex items-center gap-1.5">
+          <span className="hidden sm:inline">👁 Preview Menu</span>
           <span className="sm:hidden">👁</span>
         </Link>
       </div>

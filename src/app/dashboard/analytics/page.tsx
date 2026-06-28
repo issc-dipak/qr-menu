@@ -6,6 +6,7 @@ import { useAnalyticsStore, useAuthStore } from '@/store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils';
 import dynamic from 'next/dynamic';
+import { TrendingUp, BarChart2, Flame } from 'lucide-react';
 
 const AnalyticsChart = dynamic(() => import('@/components/features/analytics/AnalyticsChart'), {
   ssr: false,
@@ -40,7 +41,7 @@ export default function AnalyticsPage() {
       Sun: lang === 'en' ? 'Sun' : lang === 'hi' ? 'रवि' : lang === 'mr' ? 'रवि' : 'રવિ',
       Monday: lang === 'en' ? 'Monday' : lang === 'hi' ? 'सोमवार' : lang === 'mr' ? 'सोमवार' : 'સોમવાર',
       Tuesday: lang === 'en' ? 'Tuesday' : lang === 'hi' ? 'मंगलवार' : lang === 'mr' ? 'मंगळवार' : 'મંગળવાર',
-      Wednesday: lang === 'en' ? 'Wednesday' : lang === 'hi' ? 'बुधवार' : lang === 'mr' ? 'बुधवार' : 'બુધવાર',
+      Wednesday: lang === 'en' ? 'Wednesday' : lang === 'hi' ? 'बुधवार' : lang === 'mr' ? 'बुधवार' : 'બુधवार',
       Thursday: lang === 'en' ? 'Thursday' : lang === 'hi' ? 'गुरुवार' : lang === 'mr' ? 'गुरुवार' : 'ગુરૂવાર',
       Friday: lang === 'en' ? 'Friday' : lang === 'hi' ? 'शुक्रवार' : lang === 'mr' ? 'शुक्रवार' : 'શુક્રવાર',
       Saturday: lang === 'en' ? 'Saturday' : lang === 'hi' ? 'शनिवार' : lang === 'mr' ? 'शनिवार' : 'શનિવાર',
@@ -66,22 +67,26 @@ export default function AnalyticsPage() {
   if (owner?.plan === 'free') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-8 bg-surface border border-border rounded-2xl max-w-2xl mx-auto my-8">
-        <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-3xl mb-6 animate-bounce">
-          📈
+        <div className="w-16 h-16 rounded-2xl bg-accent/15 border border-accent/20 flex items-center justify-center text-accent mb-6">
+          <TrendingUp className="w-8 h-8" />
         </div>
-        <h2 className="font-display font-black text-2xl mb-3 text-[#f0f0f5]">{t.unlockAnalytics}</h2>
+        <h2 className="font-display font-bold text-2xl mb-3 text-white tracking-tight">{t.unlockAnalytics}</h2>
         <p className="text-muted text-sm max-w-md mb-8 leading-relaxed">
           {t.unlockAnalyticsDesc}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm mb-8">
-          <div className="p-4 bg-surface-2 border border-border rounded-xl">
-            <span className="text-xl">📊</span>
-            <p className="text-xs font-bold mt-1 text-[#f0f0f5]">{t.scanTracking}</p>
+          <div className="p-4 bg-surface-2 border border-border rounded-xl text-left">
+            <span className="text-accent flex items-center gap-1 mb-2">
+              <BarChart2 className="w-4 h-4" />
+            </span>
+            <p className="text-xs font-bold text-white mb-0.5">{t.scanTracking}</p>
             <p className="text-[10px] text-muted">{t.scanTrackingDesc}</p>
           </div>
-          <div className="p-4 bg-surface-2 border border-border rounded-xl">
-            <span className="text-xl">🔥</span>
-            <p className="text-xs font-bold mt-1 text-[#f0f0f5]">{t.peakHours}</p>
+          <div className="p-4 bg-surface-2 border border-border rounded-xl text-left">
+            <span className="text-accent flex items-center gap-1 mb-2">
+              <Flame className="w-4 h-4" />
+            </span>
+            <p className="text-xs font-bold text-white mb-0.5">{t.peakHours}</p>
             <p className="text-[10px] text-muted">{t.peakHoursDesc}</p>
           </div>
         </div>
@@ -93,7 +98,7 @@ export default function AnalyticsPage() {
   }
 
   if (!data) {
-    return <div className="flex items-center justify-center min-h-[300px]">{t.loadingAnalytics}</div>;
+    return <div className="flex items-center justify-center min-h-[300px] text-muted text-sm">{t.loadingAnalytics}</div>;
   }
 
   return (
@@ -101,7 +106,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="font-display font-black text-2xl">{t.analyticsTitle}</h1>
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">{t.analyticsTitle}</h1>
           <p className="text-muted text-sm mt-1">{t.analyticsSubtitle}</p>
         </div>
         <div className="flex bg-surface border border-border rounded-xl p-1 gap-1">
@@ -110,8 +115,8 @@ export default function AnalyticsPage() {
               key={r}
               onClick={() => setDateRange(r)}
               className={cn(
-                'px-4 py-2 rounded-lg text-xs font-medium transition-all border-none font-sans cursor-pointer',
-                dateRange === r ? 'bg-surface-2 text-[#f0f0f5]' : 'bg-transparent text-muted hover:text-[#f0f0f5]'
+                'px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border-none font-sans cursor-pointer',
+                dateRange === r ? 'bg-white/10 text-white' : 'bg-transparent text-muted hover:text-white'
               )}
             >
               {r === '7d' ? (t.dateRange7d || '7 Days') : r === '30d' ? (t.dateRange30d || '30 Days') : (t.dateRange3m || '3 Months')}
@@ -132,20 +137,20 @@ export default function AnalyticsPage() {
       <div className="grid lg:grid-cols-[1fr_280px] gap-5 mb-5">
         {/* Bar Chart */}
         <div className="card">
-          <h3 className="font-display font-bold mb-5">{t.dailyScans7d || 'Daily Scans — Last 7 Days'}</h3>
+          <h3 className="font-display font-semibold text-white tracking-tight mb-5">{t.dailyScans7d || 'Daily Scans — Last 7 Days'}</h3>
           <AnalyticsChart data={data.weeklySeries} />
         </div>
 
         {/* Peak Hours */}
         <div className="card">
-          <h3 className="font-display font-bold mb-4">{t.peakHours || 'Peak Hours'}</h3>
+          <h3 className="font-display font-semibold text-white tracking-tight mb-4">{t.peakHours || 'Peak Hours'}</h3>
           <div className="space-y-3">
             {data.peakHours.map((ph) => (
               <div key={ph.label} className="flex items-center gap-3">
                 <span className="text-xs text-muted w-16 flex-shrink-0">{translatePeakHourLabel(ph.label)}</span>
                 <div className="flex-1 bg-surface-2 rounded h-2">
                   <div
-                    className="h-2 rounded bg-gradient-to-r from-accent to-accent-2 transition-all"
+                    className="h-2 rounded bg-gradient-to-r from-accent to-accent-3 transition-all"
                     style={{ width: `${ph.percentage}%` }}
                   />
                 </div>
@@ -158,13 +163,13 @@ export default function AnalyticsPage() {
 
       {/* Top Items */}
       <div className="card">
-        <h3 className="font-display font-bold mb-4">{t.topItems || 'Most Viewed Items'}</h3>
+        <h3 className="font-display font-semibold text-white tracking-tight mb-4">{t.topItems || 'Most Viewed Items'}</h3>
         <div className="space-y-1">
           {data.topItems.map((item: { id: string; emoji: string; name: string; views: number; percentage: number }) => (
             <div key={item.id} className="flex items-center gap-4 py-3 border-b border-border/40 last:border-0">
               <span className="text-2xl">{item.emoji}</span>
               <div className="flex-1">
-                <p className="text-sm font-medium">{item.name}</p>
+                <p className="text-sm font-medium text-white">{item.name}</p>
                 <p className="text-xs text-muted">{item.views.toLocaleString()} {t.viewsLabel || 'views'}</p>
               </div>
               <div className="w-24 bg-surface-2 rounded h-1.5">

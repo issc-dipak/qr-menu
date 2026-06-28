@@ -8,6 +8,7 @@ import { useCopyLink } from '@/hooks';
 import { cn } from '@/utils';
 import dynamic from 'next/dynamic';
 import toast from 'react-hot-toast';
+import { MessageSquare, Copy, Instagram, Printer, ExternalLink } from 'lucide-react';
 
 const QRCodeSVG = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
@@ -115,8 +116,8 @@ export default function QrPage() {
               .table-label {
                 font-size: 14px;
                 font-weight: 700;
-                background: #00e5a0;
-                color: #0c0d13;
+                background: #6366f1;
+                color: #ffffff;
                 display: inline-block;
                 padding: 6px 16px;
                 border-radius: 50px;
@@ -162,7 +163,8 @@ export default function QrPage() {
                   margin: auto;
                 }
                 .table-label {
-                  background-color: #00e5a0 !important;
+                  background-color: #6366f1 !important;
+                  color: #ffffff !important;
                   -webkit-print-color-adjust: exact;
                   print-color-adjust: exact;
                 }
@@ -285,8 +287,8 @@ export default function QrPage() {
               .table-label {
                 font-size: 12px;
                 font-weight: 700;
-                background: #00e5a0;
-                color: #0c0d13;
+                background: #6366f1;
+                color: #ffffff;
                 padding: 4px 12px;
                 border-radius: 50px;
                 text-transform: uppercase;
@@ -366,7 +368,7 @@ export default function QrPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display font-black text-2xl">{t.qrPageTitle}</h1>
+        <h1 className="font-display font-bold text-2xl text-white tracking-tight">{t.qrPageTitle}</h1>
         <p className="text-muted text-sm mt-1">{t.qrPageSubtitle}</p>
       </div>
 
@@ -419,7 +421,7 @@ export default function QrPage() {
           </Badge>
 
           {/* Real QR Code */}
-          <div id="qr-code-container" className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center p-4 my-6 shadow-[0_0_60px_rgba(0,229,160,0.2)] relative">
+          <div id="qr-code-container" className="w-56 h-56 bg-white rounded-2xl flex items-center justify-center p-4 my-6 shadow-[0_0_40px_rgba(99,102,241,0.15)] relative">
             {owner?.shop_slug ? (
               <QRCodeSVG value={url} size={192} fgColor="#0c0d13" bgColor="#ffffff" includeMargin />
             ) : (
@@ -453,21 +455,21 @@ export default function QrPage() {
 
           {/* Share Options */}
           <div className="card">
-            <h3 className="font-display font-bold mb-4">{t.shareMenuTitle}</h3>
+            <h3 className="font-display font-semibold text-white tracking-tight mb-4">{t.shareMenuTitle}</h3>
             <div className="space-y-2">
               {[
-                { icon: '📱', label: t.shareWhatsapp, action: shareOnWhatsApp },
-                { icon: '📋', label: t.copyMenuLinkBtn,    action: () => handleCopy(url) },
-                { icon: '📸', label: t.shareInstagramBtn,action: shareOnInstagram },
-                { icon: '🖨️', label: t.downloadTableTentBtn,action: printTableTent },
+                { icon: <MessageSquare className="w-4 h-4 text-emerald-500" />, label: t.shareWhatsapp, action: shareOnWhatsApp },
+                { icon: <Copy className="w-4 h-4 text-accent-2" />, label: t.copyMenuLinkBtn,    action: () => handleCopy(url) },
+                { icon: <Instagram className="w-4 h-4 text-pink-500" />, label: t.shareInstagramBtn,action: shareOnInstagram },
+                { icon: <Printer className="w-4 h-4 text-amber-500" />, label: t.downloadTableTentBtn,action: printTableTent },
               ].map((s) => (
                 <button
                    key={s.label}
                    onClick={s.action}
-                   className="flex items-center gap-3 w-full px-4 py-3 bg-surface-2 border border-border rounded-xl text-sm hover:border-accent hover:bg-accent/5 transition-all text-left font-sans text-[#f0f0f5]"
+                   className="flex items-center gap-3 w-full px-4 py-3 bg-surface-2 border border-border rounded-xl text-sm hover:border-accent hover:bg-accent/5 transition-all text-left font-sans text-[#f0f0f5] cursor-pointer group"
                 >
-                  <span className="text-lg">{s.icon}</span>
-                  {s.label}
+                  <span className="w-8 h-8 rounded-lg bg-surface-3 flex items-center justify-center flex-shrink-0 group-hover:bg-surface-2 transition-colors">{s.icon}</span>
+                  <span>{s.label}</span>
                 </button>
               ))}
             </div>

@@ -10,27 +10,27 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        display: ['Syne', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'sans-serif'],
       },
       colors: {
-        bg: '#0a0a0f',
+        bg: '#09090b',
         surface: {
-          DEFAULT: '#111118',
-          2: '#18181f',
-          3: '#1e1e28',
+          DEFAULT: '#111114',
+          2: '#18181b',
+          3: '#202024',
         },
         border: {
-          DEFAULT: '#2a2a38',
-          2: '#222230',
+          DEFAULT: '#1f1f23',
+          2: '#27272a',
         },
         accent: {
-          DEFAULT: '#00e5a0',
-          2: '#00b8ff',
-          3: '#7c5cfc',
+          DEFAULT: '#6366f1',
+          2: '#3b82f6',
+          3: '#8b5cf6',
         },
-        muted: '#7a7a92',
-        danger: '#ff4d6d',
+        muted: '#8e8ea8',
+        danger: '#ef4444',
         gold: '#ffd166',
       },
       borderRadius: {
@@ -38,9 +38,9 @@ const config: Config = {
         'card-lg': '20px',
       },
       boxShadow: {
-        glow: '0 0 30px rgba(0,229,160,0.25)',
-        'glow-lg': '0 0 60px rgba(0,229,160,0.3)',
-        card: '0 4px 24px rgba(0,0,0,0.4)',
+        glow: '0 0 20px rgba(99,102,241,0.15)',
+        'glow-lg': '0 0 40px rgba(99,102,241,0.2)',
+        card: '0 4px 20px rgba(0,0,0,0.5)',
       },
       animation: {
         'fade-up': 'fadeUp 0.5s ease both',

@@ -7,6 +7,7 @@ import { Card, KpiCard, Badge, Skeleton } from '@/components/ui/index';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Users, Lock, Monitor, Search, Download } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -42,45 +43,6 @@ export default function SessionAnalyticsPage() {
   const { owner } = useAuthStore();
   const { t, lang } = useTranslation('owner');
 
-  if (owner && owner.plan !== 'business') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-8 bg-surface border border-border rounded-2xl max-w-2xl mx-auto my-8">
-        <div className="w-16 h-16 rounded-full bg-accent-2/10 flex items-center justify-center text-3xl mb-6 animate-bounce">
-          👥
-        </div>
-        <h2 className="font-display font-black text-2xl mb-3 text-[#f0f0f5]">
-          {t.unlockSessionsTitle || 'Unlock Session Analytics'}
-        </h2>
-        <p className="text-muted text-sm max-w-md mb-8 leading-relaxed">
-          {t.unlockSessionsDesc || 'See live customers browsing your menu, active session funnels, device breakdown, and export detailed CSV reports!'}
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm mb-8">
-          <div className="p-4 bg-surface-2 border border-border rounded-xl">
-            <span className="text-xl">🔒</span>
-            <p className="text-xs font-bold mt-1 text-[#f0f0f5]">
-              {t.sessionFunnelLabel || 'Session Funnel'}
-            </p>
-            <p className="text-[10px] text-muted">
-              {t.trackCartAbandonmentDesc || 'Track cart abandonment'}
-            </p>
-          </div>
-          <div className="p-4 bg-surface-2 border border-border rounded-xl">
-            <span className="text-xl">📱</span>
-            <p className="text-xs font-bold mt-1 text-[#f0f0f5]">
-              {t.activeVisitorsLabel || 'Active Visitors'}
-            </p>
-            <p className="text-[10px] text-muted">
-              {t.realTimeTrackingDesc || 'Real-time table tracking'}
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => window.location.href = '/dashboard/billing'} className="w-full sm:w-auto">
-          {t.upgradeToBusinessPlanBtn || 'Upgrade to Business Plan ⚡'}
-        </Button>
-      </div>
-    );
-  }
-
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [dbOrders, setDbOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +77,49 @@ export default function SessionAnalyticsPage() {
     }
     loadData();
   }, [owner?.id]);
+
+  if (owner && owner.plan !== 'business') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-8 bg-surface border border-border rounded-2xl max-w-2xl mx-auto my-8 animate-fade-up">
+        <div className="w-16 h-16 rounded-2xl bg-accent/15 border border-accent/20 flex items-center justify-center text-accent mb-6">
+          <Users className="w-8 h-8" />
+        </div>
+        <h2 className="font-display font-bold text-2xl mb-3 text-white tracking-tight">
+          {t.unlockSessionsTitle || 'Unlock Session Analytics'}
+        </h2>
+        <p className="text-muted text-sm max-w-md mb-8 leading-relaxed">
+          {t.unlockSessionsDesc || 'See live customers browsing your menu, active session funnels, device breakdown, and export detailed CSV reports!'}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-sm mb-8">
+          <div className="p-4 bg-surface-2 border border-border rounded-xl text-left">
+            <span className="text-accent flex items-center gap-1 mb-2">
+              <Lock className="w-4 h-4" />
+            </span>
+            <p className="text-xs font-bold text-white mb-0.5">
+              {t.sessionFunnelLabel || 'Session Funnel'}
+            </p>
+            <p className="text-[10px] text-muted font-medium">
+              {t.trackCartAbandonmentDesc || 'Track cart abandonment'}
+            </p>
+          </div>
+          <div className="p-4 bg-surface-2 border border-border rounded-xl text-left">
+            <span className="text-accent flex items-center gap-1 mb-2">
+              <Monitor className="w-4 h-4" />
+            </span>
+            <p className="text-xs font-bold text-white mb-0.5">
+              {t.activeVisitorsLabel || 'Active Visitors'}
+            </p>
+            <p className="text-[10px] text-muted font-medium">
+              {t.realTimeTrackingDesc || 'Real-time table tracking'}
+            </p>
+          </div>
+        </div>
+        <Button onClick={() => window.location.href = '/dashboard/billing'} className="w-full sm:w-auto">
+          {t.upgradeToBusinessPlanBtn || 'Upgrade to Business Plan ⚡'}
+        </Button>
+      </div>
+    );
+  }
 
   // Generate realistic mock sessions for preview if database has 0 records
   const getDisplaySessions = (): SessionRecord[] => {
@@ -222,9 +227,9 @@ export default function SessionAnalyticsPage() {
 
   // Conversion Funnel Data
   const funnelData = [
-    { name: `1. ${t.scansTodayLabel || 'Scanned Menu'}`, count: totalSessionCount, fill: '#60a5fa' },
-    { name: `2. ${t.cartAddsLabel || 'Added to Cart'}`, count: filteredSessions.filter(s => s.items_added_count > 0).length, fill: '#fbbf24' },
-    { name: `3. ${t.ordersPlacedLabel || 'Placed Order'}`, count: orderedSessions.length, fill: '#00e5a0' },
+    { name: `1. ${t.scansTodayLabel || 'Scanned Menu'}`, count: totalSessionCount, fill: '#3b82f6' },
+    { name: `2. ${t.cartAddsLabel || 'Added to Cart'}`, count: filteredSessions.filter(s => s.items_added_count > 0).length, fill: '#ffd166' },
+    { name: `3. ${t.ordersPlacedLabel || 'Placed Order'}`, count: orderedSessions.length, fill: '#6366f1' },
   ];
 
   // Daily Scans and Orders Timeline (Chart)
@@ -264,8 +269,8 @@ export default function SessionAnalyticsPage() {
     });
     const total = (mobile + desktop) || 1;
     return [
-      { name: 'Mobile', value: mobile, percentage: Math.round((mobile / total) * 100), fill: '#00e5a0' },
-      { name: 'Desktop/Tablet', value: desktop, percentage: Math.round((desktop / total) * 100), fill: '#60a5fa' }
+      { name: 'Mobile', value: mobile, percentage: Math.round((mobile / total) * 100), fill: '#6366f1' },
+      { name: 'Desktop/Tablet', value: desktop, percentage: Math.round((desktop / total) * 100), fill: '#3b82f6' }
     ];
   })();
 
@@ -384,8 +389,8 @@ export default function SessionAnalyticsPage() {
       {/* Title & Filters Row */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="font-display font-black text-2xl flex items-center gap-2">
-            🔳 {t.sessionsTitle || 'Customer Sessions'}
+          <h1 className="font-display font-bold text-2xl text-white tracking-tight flex items-center gap-2">
+            <Users className="w-6 h-6 text-accent" /> {t.sessionsTitle || 'Customer Sessions'}
             {sessions.length === 0 && (
               <Badge variant="blue" className="ml-2">{t.demoDataLabel || 'Demo Data'}</Badge>
             )}
@@ -394,13 +399,13 @@ export default function SessionAnalyticsPage() {
         </div>
 
         <div className="flex gap-2 flex-wrap items-center">
-          <div className="flex bg-surface-2 border border-border rounded-xl p-1 gap-1 text-xs">
+          <div className="flex bg-surface border border-border rounded-xl p-1 gap-1 text-xs">
             {(['today', '7d', '30d', 'all'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => { setDateFilter(f); setCurrentPage(1); }}
                 className={`px-3 py-1.5 rounded-lg font-semibold cursor-pointer border-none transition-all ${
-                  dateFilter === f ? 'bg-accent/15 text-accent font-bold' : 'bg-transparent text-muted hover:text-white'
+                  dateFilter === f ? 'bg-white/10 text-white font-bold' : 'bg-transparent text-muted hover:text-white'
                 }`}
               >
                 {dateLabelMap[f]}
@@ -408,20 +413,20 @@ export default function SessionAnalyticsPage() {
             ))}
           </div>
 
-          <Button onClick={exportToCSV} size="sm" variant="ghost" className="border-border text-sm flex items-center gap-1.5">
-            📤 {t.exportCsv || 'Export CSV'}
+          <Button onClick={exportToCSV} size="sm" variant="ghost" className="border-border text-sm flex items-center gap-1.5" leftIcon={<Download className="w-4 h-4" />}>
+            {t.exportCsv || 'Export CSV'}
           </Button>
         </div>
       </div>
 
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="flex flex-col justify-center p-5">
-          <p className="text-xs text-muted font-medium mb-1 flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-accent rounded-full animate-ping" />
+        <Card className="flex flex-col justify-center p-5 border-l-4 border-l-accent relative overflow-hidden">
+          <p className="text-[11px] text-muted font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping" />
             {t.activeVisitors30m || 'Active Visitors (Last 30m)'}
           </p>
-          <p className="font-display text-3xl font-black text-accent">{activeNow}</p>
+          <p className="font-display text-3xl font-bold text-white">{activeNow}</p>
           <p className="text-[10px] text-muted mt-2">{t.activeMenusOpenDesc || 'Active menus open currently'}</p>
         </Card>
         
@@ -437,7 +442,7 @@ export default function SessionAnalyticsPage() {
         {/* Main Timeline Activity Chart */}
         <div className="card lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-display font-bold text-sm">{t.scanVsOrderLabel || 'Scan vs Order Activity'}</h3>
+            <h3 className="font-display font-semibold text-white tracking-tight text-sm">{t.scanVsOrderLabel || 'Scan vs Order Activity'}</h3>
             <span className="text-xs text-muted">{t.last7ActiveDays || 'Last 7 Active Days'}</span>
           </div>
           <div className="h-64">
@@ -446,16 +451,16 @@ export default function SessionAnalyticsPage() {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={timelineData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2e3d" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f1f23" />
                   <XAxis dataKey="date" stroke="#888891" fontSize={11} tickLine={false} />
                   <YAxis stroke="#888891" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#13141c', borderColor: '#2e303f', color: '#f0f0f5' }}
+                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#f0f0f5', borderRadius: 8 }}
                     labelClassName="font-bold text-accent"
                   />
                   <Legend verticalAlign="top" height={36} iconType="circle" />
-                  <Line type="monotone" dataKey={t.totalQrScans || 'Total Scans'} stroke="#60a5fa" strokeWidth={2.5} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey={t.ordersPlacedLabel || 'Orders Placed'} stroke="#00e5a0" strokeWidth={2.5} />
+                  <Line type="monotone" dataKey={t.totalQrScans || 'Total Scans'} stroke="#3b82f6" strokeWidth={2.5} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey={t.ordersPlacedLabel || 'Orders Placed'} stroke="#6366f1" strokeWidth={2.5} />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -464,14 +469,14 @@ export default function SessionAnalyticsPage() {
 
         {/* Conversion Funnel Bar Chart */}
         <div className="card space-y-4">
-          <h3 className="font-display font-bold text-sm">{t.customerConversionFunnel || 'Customer Conversion Funnel'}</h3>
+          <h3 className="font-display font-semibold text-white tracking-tight text-sm">{t.customerConversionFunnel || 'Customer Conversion Funnel'}</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={funnelData} layout="vertical" margin={{ left: 10, right: 10 }}>
                 <XAxis type="number" stroke="#888891" fontSize={10} hide />
                 <YAxis type="category" dataKey="name" stroke="#888891" fontSize={11} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#13141c', borderColor: '#2e303f', color: '#f0f0f5' }}
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#f0f0f5', borderRadius: 8 }}
                   cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                 />
                 <Bar dataKey="count" radius={8} barSize={20}>
@@ -488,7 +493,7 @@ export default function SessionAnalyticsPage() {
       {/* Device & Quality Metrics Row */}
       <div className="grid md:grid-cols-3 gap-6">
         <div className="card p-5 space-y-4 flex flex-col justify-between">
-          <h3 className="font-display font-bold text-sm text-muted uppercase tracking-wider">{t.sessionQualityTitle || 'Session Quality'}</h3>
+          <h3 className="font-display font-semibold text-muted uppercase tracking-wider text-xs">{t.sessionQualityTitle || 'Session Quality'}</h3>
           <div className="space-y-4 my-2">
             <div className="flex justify-between items-center border-b border-border/40 pb-2">
               <span className="text-xs text-muted">{t.avgTimeSpentSession || 'Avg Time Spent / Session'}</span>
@@ -513,7 +518,7 @@ export default function SessionAnalyticsPage() {
         </div>
 
         <div className="card p-5 space-y-4 md:col-span-2">
-          <h3 className="font-display font-bold text-sm">{t.trafficSourceTitle || 'Traffic Source (Device Type)'}</h3>
+          <h3 className="font-display font-semibold text-white tracking-tight text-sm">{t.trafficSourceTitle || 'Traffic Source (Device Type)'}</h3>
           <div className="flex items-center justify-around h-28 gap-4 pt-2">
             {deviceData.map((dev) => (
               <div key={dev.name} className="text-center space-y-2">
@@ -531,20 +536,23 @@ export default function SessionAnalyticsPage() {
       {/* Session Log Table */}
       <div className="card space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h3 className="font-display font-bold text-sm">{t.detailedSessionLog || 'Detailed Session Log'}</h3>
+          <h3 className="font-display font-semibold text-white tracking-tight text-sm">{t.detailedSessionLog || 'Detailed Session Log'}</h3>
           
           <div className="flex gap-2 w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder={t.searchSessionPlaceholder || 'Search session...'}
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              className="bg-surface-2 border border-border rounded-xl px-3.5 py-2 text-xs text-[#f0f0f5] placeholder:text-muted outline-none focus:border-accent w-full sm:w-44 transition-all"
-            />
+            <div className="flex items-center bg-surface border border-border rounded-xl px-3.5 py-2 gap-2 flex-1 sm:w-44 focus-within:border-accent/40 transition-all">
+              <Search className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+              <input
+                type="text"
+                placeholder={t.searchSessionPlaceholder || 'Search session...'}
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="bg-transparent outline-none text-xs text-[#f0f0f5] placeholder:text-muted/60 w-full"
+              />
+            </div>
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value as any); setCurrentPage(1); }}
-              className="bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-[#f0f0f5] outline-none cursor-pointer"
+              className="bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-[#f0f0f5] outline-none cursor-pointer focus:border-accent"
             >
               <option value="all">{t.allStatuses || 'All Statuses'}</option>
               <option value="ordered">{t.orderedStatus || 'Ordered'}</option>

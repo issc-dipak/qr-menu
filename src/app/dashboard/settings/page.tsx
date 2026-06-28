@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Toggle } from '@/components/ui/index';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuthStore, useLangStore } from '@/store';
 import { SHOP_CATEGORIES, LANGUAGES } from '@/constants';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils';
 import toast from 'react-hot-toast';
 import type { LangCode } from '@/i18n/translations';
+import { User, Store, Palette, Bell, Globe, AlertTriangle, Settings } from 'lucide-react';
 
 type Tab = 'profile' | 'shop' | 'theme' | 'notifications' | 'language' | 'danger';
 
@@ -19,15 +19,15 @@ export default function SettingsPage() {
   const { t } = useTranslation('owner');
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [notifs, setNotifs] = useState({ daily: true, weekly: true, product: false, marketing: true });
-  const [themeForm, setThemeForm] = useState<{ primaryColor: string; fontFamily: string; layout: 'grid' | 'list' }>({ primaryColor: '#00e5a0', fontFamily: 'Syne', layout: 'grid' });
+  const [themeForm, setThemeForm] = useState<{ primaryColor: string; fontFamily: string; layout: 'grid' | 'list' }>({ primaryColor: '#6366f1', fontFamily: 'Plus Jakarta Sans', layout: 'grid' });
 
-  const TABS: { id: Tab; label: string; icon: string }[] = [
-    { id: 'profile',       label: t.tabProfile,       icon: '👤' },
-    { id: 'shop',          label: t.tabShop,           icon: '🏪' },
-    { id: 'theme',         label: t.tabTheme,          icon: '🎨' },
-    { id: 'notifications', label: t.tabNotifications,  icon: '🔔' },
-    { id: 'language',      label: t.tabLanguage,       icon: '🌐' },
-    { id: 'danger',        label: t.tabDanger,         icon: '⚠️' },
+  const TABS: { id: Tab; label: string; icon: any }[] = [
+    { id: 'profile',       label: t.tabProfile,       icon: User },
+    { id: 'shop',          label: t.tabShop,           icon: Store },
+    { id: 'theme',         label: t.tabTheme,          icon: Palette },
+    { id: 'notifications', label: t.tabNotifications,  icon: Bell },
+    { id: 'language',      label: t.tabLanguage,       icon: Globe },
+    { id: 'danger',        label: t.tabDanger,         icon: AlertTriangle },
   ];
 
   const CAT_OPTIONS = SHOP_CATEGORIES.map((c) => ({ value: c, label: c }));
@@ -66,8 +66,8 @@ export default function SettingsPage() {
       });
       if (owner.theme_settings) {
         setThemeForm({
-          primaryColor: owner.theme_settings.primaryColor || '#00e5a0',
-          fontFamily: owner.theme_settings.fontFamily || 'Syne',
+          primaryColor: owner.theme_settings.primaryColor || '#6366f1',
+          fontFamily: owner.theme_settings.fontFamily || 'Plus Jakarta Sans',
           layout: owner.theme_settings.layout || 'grid',
         });
       }
@@ -76,44 +76,50 @@ export default function SettingsPage() {
 
   const saveProfile = async () => {
     const success = await updateOwner(profileForm);
-    if (success) toast.success('Profile updated! ✅');
+    if (success) toast.success('Profile updated successfully!');
   };
 
   const saveShop = async () => {
     const success = await updateOwner(shopForm);
-    if (success) toast.success('Shop details updated! ✅');
+    if (success) toast.success('Shop details updated successfully!');
   };
 
   const saveTheme = async () => {
     const success = await updateOwner({ theme_settings: themeForm });
-    if (success) toast.success('Theme settings saved! 🎨');
+    if (success) toast.success('Theme settings saved successfully!');
   };
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-display font-black text-2xl">{t.settingsTitle}</h1>
+        <h1 className="font-display font-bold text-2xl text-white tracking-tight flex items-center gap-2">
+          <Settings className="w-6 h-6 text-accent" /> {t.settingsTitle}
+        </h1>
         <p className="text-muted text-sm mt-1">{t.settingsSubtitle}</p>
       </div>
 
       <div className="grid lg:grid-cols-[200px_1fr] gap-6">
         {/* Tab Nav */}
         <nav className="flex lg:flex-col gap-1 overflow-x-auto flex-nowrap scrollbar-none pb-2 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all border-none font-sans text-left cursor-pointer w-auto lg:w-full flex-shrink-0',
-                activeTab === tab.id
-                  ? 'bg-accent/10 text-accent font-medium'
-                  : 'bg-transparent text-muted hover:bg-white/4 hover:text-[#f0f0f5]'
-              )}
-            >
-              <span>{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm transition-all border-none font-sans text-left cursor-pointer w-auto lg:w-full flex-shrink-0 group',
+                  isActive
+                    ? 'bg-accent/15 text-accent font-semibold'
+                    : 'bg-transparent text-muted hover:bg-white/5 hover:text-[#f0f0f5]'
+                )}
+              >
+                <Icon className={cn('w-4 h-4 transition-colors', isActive ? 'text-accent' : 'text-muted group-hover:text-[#f0f0f5]')} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* Content */}
@@ -122,12 +128,12 @@ export default function SettingsPage() {
           {/* ── PROFILE ── */}
           {activeTab === 'profile' && (
             <div className="card">
-              <h3 className="font-display font-bold mb-1">{t.profileTitle}</h3>
-              <p className="text-muted text-sm mb-5">{t.profileSubtitle}</p>
+              <h3 className="font-display font-semibold text-white tracking-tight text-base mb-1">{t.profileTitle}</h3>
+              <p className="text-muted text-xs mb-5">{t.profileSubtitle}</p>
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-3xl flex-shrink-0">
-                  👨
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+                  <User className="w-6 h-6" />
                 </div>
                 <Button variant="ghost" size="sm">{t.changePhoto}</Button>
               </div>
@@ -146,8 +152,8 @@ export default function SettingsPage() {
           {/* ── SHOP ── */}
           {activeTab === 'shop' && (
             <div className="card">
-              <h3 className="font-display font-bold mb-1">{t.shopTitle}</h3>
-              <p className="text-muted text-sm mb-5">{t.shopSubtitle}</p>
+              <h3 className="font-display font-semibold text-white tracking-tight text-base mb-1">{t.shopTitle}</h3>
+              <p className="text-muted text-xs mb-5">{t.shopSubtitle}</p>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,8 +175,8 @@ export default function SettingsPage() {
           {/* ── THEME ── */}
           {activeTab === 'theme' && (
             <div className="card">
-              <h3 className="font-display font-bold mb-1">{t.themeTitle}</h3>
-              <p className="text-muted text-sm mb-5">{t.themeSubtitle}</p>
+              <h3 className="font-display font-semibold text-white tracking-tight text-base mb-1">{t.themeTitle}</h3>
+              <p className="text-muted text-xs mb-5">{t.themeSubtitle}</p>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -185,7 +191,7 @@ export default function SettingsPage() {
                       />
                       <input
                         type="text"
-                        className="flex-1 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-[#f0f0f5] outline-none"
+                        className="flex-1 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm text-[#f0f0f5] outline-none focus:border-accent"
                         value={themeForm.primaryColor}
                         onChange={(e) => setThemeForm({ ...themeForm, primaryColor: e.target.value })}
                       />
@@ -195,9 +201,10 @@ export default function SettingsPage() {
                   <Select
                     label={t.labelFont}
                     options={[
-                      { value: 'Syne', label: t.fontModern },
-                      { value: 'DM Sans', label: t.fontClean },
-                      { value: 'sans-serif', label: t.fontStandard },
+                      { value: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans (Elegant)' },
+                      { value: 'Inter', label: 'Inter (Clean)' },
+                      { value: 'Syne', label: t.fontModern || 'Syne (Modern Bold)' },
+                      { value: 'sans-serif', label: t.fontStandard || 'Standard' },
                     ]}
                     value={themeForm.fontFamily}
                     onChange={(e) => setThemeForm({ ...themeForm, fontFamily: e.target.value })}
@@ -224,10 +231,10 @@ export default function SettingsPage() {
           {/* ── NOTIFICATIONS ── */}
           {activeTab === 'notifications' && (
             <div className="card">
-              <h3 className="font-display font-bold mb-1">{t.notifTitle}</h3>
-              <p className="text-muted text-sm mb-5">{t.notifSubtitle}</p>
+              <h3 className="font-display font-semibold text-white tracking-tight text-base mb-1">{t.notifTitle}</h3>
+              <p className="text-muted text-xs mb-5">{t.notifSubtitle}</p>
 
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/40">
                 {[
                   { key: 'daily',     title: t.notifDaily,     sub: t.notifDailySub },
                   { key: 'weekly',    title: t.notifWeekly,    sub: t.notifWeeklySub },
@@ -236,7 +243,7 @@ export default function SettingsPage() {
                 ].map((n) => (
                   <div key={n.key} className="flex items-center justify-between py-4">
                     <div>
-                      <p className="text-sm font-medium">{n.title}</p>
+                      <p className="text-sm font-medium text-[#f0f0f5]">{n.title}</p>
                       <p className="text-xs text-muted mt-0.5">{n.sub}</p>
                     </div>
                     <Toggle
@@ -247,7 +254,7 @@ export default function SettingsPage() {
                 ))}
               </div>
 
-              <Button size="sm" className="mt-4" onClick={() => toast.success('Notification preferences saved! ✅')}>
+              <Button size="sm" className="mt-4" onClick={() => toast.success('Notification preferences saved!')}>
                 {t.savePreferences}
               </Button>
             </div>
@@ -256,8 +263,8 @@ export default function SettingsPage() {
           {/* ── LANGUAGE ── */}
           {activeTab === 'language' && (
             <div className="card">
-              <h3 className="font-display font-bold mb-1">{t.languageTitle}</h3>
-              <p className="text-muted text-sm mb-6">{t.languageSubtitle}</p>
+              <h3 className="font-display font-semibold text-white tracking-tight text-base mb-1">{t.languageTitle}</h3>
+              <p className="text-muted text-xs mb-6">{t.languageSubtitle}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {LANGUAGES.map((lang) => (
@@ -271,7 +278,7 @@ export default function SettingsPage() {
                       'flex items-center gap-3 p-4 rounded-xl border text-left transition-all cursor-pointer font-sans',
                       ownerLang === lang.code
                         ? 'border-accent bg-accent/10 text-accent'
-                        : 'border-border bg-surface-2 text-muted hover:border-accent/40 hover:text-[#f0f0f5]'
+                        : 'border-border bg-surface-2 text-muted hover:border-accent/45 hover:text-[#f0f0f5]'
                     )}
                   >
                     <span className="text-3xl">{lang.flag}</span>
@@ -296,9 +303,9 @@ export default function SettingsPage() {
 
           {/* ── DANGER ZONE ── */}
           {activeTab === 'danger' && (
-            <div className="bg-danger/5 border border-danger/20 rounded-card p-6">
-              <h3 className="font-display font-bold text-danger mb-1">{t.dangerTitle}</h3>
-              <p className="text-danger/60 text-sm mb-6">{t.dangerSubtitle}</p>
+            <div className="bg-danger/5 border border-danger/25 rounded-card p-6">
+              <h3 className="font-display font-semibold text-danger tracking-tight text-base mb-1">{t.dangerTitle}</h3>
+              <p className="text-danger/60 text-xs mb-6">{t.dangerSubtitle}</p>
 
               <div className="space-y-4">
                 {[
@@ -307,7 +314,7 @@ export default function SettingsPage() {
                 ].map((d) => (
                   <div key={d.title} className="flex items-center justify-between flex-wrap gap-3 py-3 border-b border-danger/10 last:border-0">
                     <div>
-                      <p className="text-sm font-medium">{d.title}</p>
+                      <p className="text-sm font-medium text-white">{d.title}</p>
                       <p className="text-xs text-muted mt-0.5">{d.sub}</p>
                     </div>
                     <Button variant="danger" size="sm" onClick={d.action}>{d.title}</Button>
