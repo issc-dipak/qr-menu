@@ -94,12 +94,13 @@ export const DASHBOARD_NAV: NavItem[] = [
   { label: 'Overview',   href: '/dashboard/overview',   icon: '📊' },
   { label: 'Menu Items', href: '/dashboard/menu',       icon: '🍽️' },
   { label: 'Orders',     href: '/dashboard/orders',     icon: '📋' },
-  { label: 'QR Code',   href: '/dashboard/qr',         icon: '🔳' },
-  { label: 'Analytics', href: '/dashboard/analytics',  icon: '📈' },
-  { label: 'Sessions',  href: '/dashboard/sessions',   icon: '👥' },
-  { label: 'Ask AI',    href: '/dashboard/ask-ai',     icon: '✨' },
-  { label: 'Settings',  href: '/dashboard/settings',   icon: '⚙️' },
-  { label: 'Billing',   href: '/dashboard/billing',    icon: '💳' },
+  { label: 'QR Code',    href: '/dashboard/qr',         icon: '🔳' },
+  { label: 'Analytics',  href: '/dashboard/analytics',  icon: '📈' },
+  { label: 'Sessions',   href: '/dashboard/sessions',   icon: '👥' },
+  { label: 'Reviews',    href: '/dashboard/reviews',    icon: '⭐' },
+  { label: 'Ask AI',     href: '/dashboard/ask-ai',     icon: '✨' },
+  { label: 'Settings',   href: '/dashboard/settings',   icon: '⚙️' },
+  { label: 'Billing',    href: '/dashboard/billing',    icon: '💳' },
 ];
 
 // ─── MOCK DATA ────────────────────────────────────────────────

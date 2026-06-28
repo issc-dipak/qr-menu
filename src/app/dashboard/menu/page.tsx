@@ -46,7 +46,7 @@ export default function MenuPage() {
       {/* Controls */}
       <div className="flex gap-3 items-center flex-wrap mb-5">
         {/* Search */}
-        <div className="flex items-center bg-surface border border-border rounded-lg px-3 py-2 gap-2 flex-1 min-w-[200px] focus-within:border-accent/40 transition-colors">
+        <div className="flex items-center bg-surface border border-border rounded-lg px-3 py-2 gap-2 flex-1 min-w-0 focus-within:border-accent/40 transition-colors">
           <Search className="text-muted w-4 h-4 flex-shrink-0" />
           <input
             className="bg-transparent outline-none text-sm flex-1 text-[#f0f0f5] placeholder:text-muted/60"

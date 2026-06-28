@@ -13,6 +13,7 @@ import {
   QrCode,
   TrendingUp,
   Users,
+  Star,
   Sparkles,
   Settings as SettingsIcon,
   CreditCard,
@@ -28,6 +29,7 @@ const NAV_LABEL_KEYS: Record<string, string> = {
   '/dashboard/qr':         'qrCode',
   '/dashboard/analytics':  'analytics',
   '/dashboard/sessions':   'sessions',
+  '/dashboard/reviews':    'reviews',
   '/dashboard/ask-ai':     'askAi',
   '/dashboard/settings':   'settings',
   '/dashboard/billing':    'billing',
@@ -40,6 +42,7 @@ const NAV_ICONS: Record<string, any> = {
   '/dashboard/qr': QrCode,
   '/dashboard/analytics': TrendingUp,
   '/dashboard/sessions': Users,
+  '/dashboard/reviews': Star,
   '/dashboard/ask-ai': Sparkles,
   '/dashboard/settings': SettingsIcon,
   '/dashboard/billing': CreditCard,
@@ -71,7 +74,7 @@ export function Sidebar() {
         <div className="flex-1 p-3 space-y-1">
           <p className="text-[9px] font-bold tracking-widest uppercase text-muted/60 px-3 py-2">{t.main}</p>
 
-          {DASHBOARD_NAV.slice(0,6).map((item) => {
+          {DASHBOARD_NAV.slice(0,7).map((item) => {
             const labelKey = NAV_LABEL_KEYS[item.href];
             const label = labelKey ? String((t as any)[labelKey]) : item.label;
             const Icon = NAV_ICONS[item.href];
@@ -97,7 +100,7 @@ export function Sidebar() {
 
           <p className="text-[9px] font-bold tracking-widest uppercase text-muted/60 px-3 py-2 mt-3">{t.account}</p>
 
-          {DASHBOARD_NAV.slice(6).map((item) => {
+          {DASHBOARD_NAV.slice(7).map((item) => {
             const labelKey = NAV_LABEL_KEYS[item.href];
             const label = labelKey ? String((t as any)[labelKey]) : item.label;
             const Icon = NAV_ICONS[item.href];
