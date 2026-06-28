@@ -20,6 +20,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [notifs, setNotifs] = useState({ daily: true, weekly: true, product: false, marketing: true });
   const [themeForm, setThemeForm] = useState<{ primaryColor: string; fontFamily: string; layout: 'grid' | 'list' }>({ primaryColor: '#6366f1', fontFamily: 'Plus Jakarta Sans', layout: 'grid' });
+  const [isEmojiModalOpen, setIsEmojiModalOpen] = useState(false);
+  const SHOP_EMOJIS = ['🏪', '🍕', '🍔', '☕', '🍰', '🍣', '🛍️', '🍦', '🍜', '🥗', '🍳', '🍹', '🍷', '🍽️'];
 
   const TABS: { id: Tab; label: string; icon: any }[] = [
     { id: 'profile',       label: t.tabProfile,       icon: User },
@@ -73,6 +75,14 @@ export default function SettingsPage() {
       }
     }
   }, [owner]);
+
+  const handleSelectEmoji = async (emoji: string) => {
+    setIsEmojiModalOpen(false);
+    const success = await updateOwner({ shop_avatar: emoji });
+    if (success) {
+      toast.success('Shop avatar updated!');
+    }
+  };
 
   const saveProfile = async () => {
     const success = await updateOwner(profileForm);
@@ -132,16 +142,16 @@ export default function SettingsPage() {
               <p className="text-muted text-xs mb-5">{t.profileSubtitle}</p>
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
-                  <User className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 text-white shadow-sm text-2xl">
+                  {owner?.shop_avatar || '🏪'}
                 </div>
-                <Button variant="ghost" size="sm">{t.changePhoto}</Button>
+                <Button variant="ghost" size="sm" onClick={() => setIsEmojiModalOpen(true)}>{t.changePhoto}</Button>
               </div>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label={t.labelFullName} value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} />
-                  <Input label={t.labelEmail} type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} />
+                  <Input label={t.labelEmail} type="email" value={profileForm.email} disabled />
                 </div>
                 <Input label={t.labelPhone} value={profileForm.shop_phone} onChange={(e) => setProfileForm({ ...profileForm, shop_phone: e.target.value })} />
                 <Button size="sm" onClick={saveProfile}>{t.saveChanges}</Button>
@@ -326,6 +336,41 @@ export default function SettingsPage() {
 
         </div>
       </div>
+
+      {/* Emoji Picker Modal */}
+      {isEmojiModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-border rounded-2xl w-full max-w-sm p-6 shadow-glow animate-fade-up relative">
+            <h3 className="font-display font-semibold text-white text-lg mb-1">
+              Select Shop Avatar
+            </h3>
+            <p className="text-muted text-xs mb-4">
+              This emoji will appear on your customer menu and dashboard header.
+            </p>
+
+            <div className="grid grid-cols-5 gap-3 mb-6">
+              {SHOP_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleSelectEmoji(emoji)}
+                  className={cn(
+                    "w-12 h-12 text-2xl flex items-center justify-center rounded-xl bg-surface-2 border border-border hover:border-accent hover:bg-accent/10 transition-all cursor-pointer",
+                    owner?.shop_avatar === emoji && "border-accent bg-accent/15"
+                  )}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="ghost" size="sm" onClick={() => setIsEmojiModalOpen(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
