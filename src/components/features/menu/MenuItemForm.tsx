@@ -28,9 +28,11 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
   const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isVeg, setIsVeg] = useState(true);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState('');
+  const [dietaryType, setDietaryType] = useState<'veg' | 'non-veg' | 'custom'>('veg');
+  const [customDietary, setCustomDietary] = useState('');
+  const [customDietaryIsVeg, setCustomDietaryIsVeg] = useState(true);
 
   const isFree = !owner || owner.plan === 'free';
 
@@ -49,10 +51,31 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
     if (editingItem) {
       setEmoji(editingItem.emoji);
       setName(editingItem.name);
-      setDescription(editingItem.description || '');
       setPrice(String(editingItem.price));
       setImageUrl(editingItem.image_url || '');
-      setIsVeg((editingItem as any).is_veg !== false);
+
+      // Parse custom dietary type from description
+      let cleanDesc = editingItem.description || '';
+      let parsedDiet = '';
+      if (cleanDesc.startsWith('[Diet:')) {
+        const closeIdx = cleanDesc.indexOf(']');
+        if (closeIdx !== -1) {
+          parsedDiet = cleanDesc.substring(6, closeIdx).trim();
+          cleanDesc = cleanDesc.substring(closeIdx + 1).trim();
+        }
+      }
+
+      setDescription(cleanDesc);
+
+      if (parsedDiet) {
+        setDietaryType('custom');
+        setCustomDietary(parsedDiet);
+        setCustomDietaryIsVeg(editingItem.is_veg !== false);
+      } else {
+        setDietaryType(editingItem.is_veg !== false ? 'veg' : 'non-veg');
+        setCustomDietary('');
+        setCustomDietaryIsVeg(true);
+      }
 
       const isDefaultOrExisting = [...MENU_CATEGORIES, ...customCatsInMenu].includes(editingItem.category);
       if (isDefaultOrExisting) {
@@ -73,7 +96,9 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
       setIsCustomCategory(false);
       setCustomCategory('');
       setImageUrl('');
-      setIsVeg(true);
+      setDietaryType('veg');
+      setCustomDietary('');
+      setCustomDietaryIsVeg(true);
     }
     setErrors({});
   }, [editingItem, isOpen, items]);
@@ -83,6 +108,7 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
     if (!name.trim()) e.name = 'Item name is required';
     if (!price || isNaN(Number(price)) || Number(price) <= 0) e.price = 'Valid price is required';
     if (isCustomCategory && !customCategory.trim()) e.customCategory = 'Custom category name is required';
+    if (dietaryType === 'custom' && !customDietary.trim()) e.customDietary = 'Custom dietary name is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -112,15 +138,26 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
 
   const handleSubmit = () => {
     if (!validate()) return;
+
+    let finalDesc = description.trim();
+    let finalIsVeg = dietaryType === 'veg';
+
+    if (dietaryType === 'custom') {
+      finalDesc = `[Diet:${customDietary.trim()}] ${finalDesc}`;
+      finalIsVeg = customDietaryIsVeg;
+    } else if (dietaryType === 'non-veg') {
+      finalIsVeg = false;
+    }
+
     onSubmit({
       emoji,
       name: name.trim(),
-      description: description.trim(),
+      description: finalDesc,
       price: Number(price),
       category: isCustomCategory ? customCategory.trim() : category,
       status: 'active',
       image_url: imageUrl || null,
-      is_veg: isVeg,
+      is_veg: finalIsVeg,
     });
   };
 
@@ -245,17 +282,17 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
           />
         )}
 
-        {/* Veg / Non-Veg Selection */}
+        {/* Veg / Non-Veg / Custom Selection */}
         <div>
           <label className="block text-[10px] font-bold tracking-wider uppercase text-muted mb-2">Dietary Type *</label>
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setIsVeg(true)}
+              onClick={() => setDietaryType('veg')}
               className={cn(
                 "flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                isVeg 
-                  ? "bg-accent/15 border-accent text-accent" 
+                dietaryType === 'veg'
+                  ? "bg-accent/15 border-accent text-accent"
                   : "bg-surface-2 border-border text-muted hover:border-accent/40"
               )}
             >
@@ -263,18 +300,72 @@ export function MenuItemForm({ isOpen, onClose, onSubmit, editingItem }: MenuIte
             </button>
             <button
               type="button"
-              onClick={() => setIsVeg(false)}
+              onClick={() => setDietaryType('non-veg')}
               className={cn(
                 "flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                !isVeg 
-                  ? "bg-danger/15 border-danger text-danger" 
+                dietaryType === 'non-veg'
+                  ? "bg-danger/15 border-danger text-danger"
                   : "bg-surface-2 border-border text-muted hover:border-danger/40"
               )}
             >
               Non-Veg 🔴
             </button>
+            <button
+              type="button"
+              onClick={() => setDietaryType('custom')}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                dietaryType === 'custom'
+                  ? "bg-amber-500/15 border-amber-500 text-amber-500"
+                  : "bg-surface-2 border-border text-muted hover:border-amber-500/40"
+              )}
+            >
+              + Custom ⚙️
+            </button>
           </div>
         </div>
+
+        {dietaryType === 'custom' && (
+          <div className="space-y-3 bg-surface-2/40 border border-border p-3 rounded-xl animate-fade-up">
+            <Input
+              label="Custom Dietary Name *"
+              placeholder="e.g. Eggitarian 🟡, Vegan 🌱, Jain 🌾"
+              value={customDietary}
+              onChange={(e) => setCustomDietary(e.target.value)}
+              error={errors.customDietary}
+            />
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-wider uppercase text-muted mb-1.5">Classify as *</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCustomDietaryIsVeg(true)}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer",
+                    customDietaryIsVeg
+                      ? "bg-accent/15 border-accent text-accent"
+                      : "bg-surface-2 border-border text-muted"
+                  )}
+                >
+                  Veg (Green) 🟢
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomDietaryIsVeg(false)}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer",
+                    !customDietaryIsVeg
+                      ? "bg-danger/15 border-danger text-danger"
+                      : "bg-surface-2 border-border text-muted"
+                  )}
+                >
+                  Non-Veg (Red) 🔴
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-3 pt-2">
           <Button variant="ghost" fullWidth onClick={onClose}>Cancel</Button>

@@ -14,9 +14,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase';
 import { getActiveCustomerSession } from '@/services/customerAuthService';
 import toast from 'react-hot-toast';
+import { parseMenuItemDiet } from '@/utils/menuUtils';
 
 interface PageProps { params: { slug: string }; }
-const CAT_ICONS: Record<string,string> = { 'Hot Drinks':'☕','Cold Drinks':'🧋','Snacks':'🥐','Main Course':'🍛','Desserts':'🍰','Other':'📦' };
+const CAT_ICONS: Record<string, string> = { 'Hot Drinks': '☕', 'Cold Drinks': '🧋', 'Snacks': '🥐', 'Main Course': '🍛', 'Desserts': '🍰', 'Other': '📦' };
 
 export default function CustomerMenuPage({ params }: PageProps) {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
       toast.error(t.enterTable);
       return;
     }
-    
+
     setWaiterCallLoading(true);
     const toastId = toast.loading(`${t.calling}`);
     try {
@@ -58,9 +59,9 @@ export default function CustomerMenuPage({ params }: PageProps) {
         table_number: `Table ${tableInput.trim()}`,
         status: 'pending',
       });
-      
+
       if (error) throw error;
-      
+
       toast.success(t.waiterCalled, { id: toastId });
       setWaiterModalOpen(false);
     } catch (err: any) {
@@ -162,8 +163,8 @@ export default function CustomerMenuPage({ params }: PageProps) {
         .subscribe();
 
       const [menuItems] = await Promise.all([getPublicMenuItems(ownerData.id), recordScan(ownerData.id)]);
-      setOwner(ownerData); 
-      setItems(menuItems); 
+      setOwner(ownerData);
+      setItems(menuItems);
       setLoading(false);
 
       return () => {
@@ -183,17 +184,18 @@ export default function CustomerMenuPage({ params }: PageProps) {
 
   const categories = Array.from(new Set(items.map((i) => i.category)));
   const filtered = items.filter((item) => {
+    const { cleanDescription } = parseMenuItemDiet(item);
     const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (item.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cleanDescription.toLowerCase().includes(searchQuery.toLowerCase());
+
     let matchesDiet = true;
     if (dietFilter === 'veg') {
       matchesDiet = (item as any).is_veg !== false;
     } else if (dietFilter === 'non-veg') {
       matchesDiet = (item as any).is_veg === false;
     }
-    
+
     return matchesCategory && matchesSearch && matchesDiet;
   });
 
@@ -207,11 +209,12 @@ export default function CustomerMenuPage({ params }: PageProps) {
   );
 
   if (notFound || !owner) return (
-    <div className="min-h-screen bg-[#0d1a12] flex flex-col items-center justify-center text-center px-4">
-      <p className="text-5xl mb-4">🔍</p>
-      <h1 className="font-display font-black text-2xl text-accent mb-2">{t.shopNotFound}</h1>
-      <p className="text-accent/50 text-sm mb-6">{t.shopNotFoundSub}</p>
-      <Link href="/" className="text-accent text-sm border border-accent/30 px-4 py-2 rounded-lg hover:bg-accent/10 transition-colors no-underline">{t.createMenu}</Link>
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-accent/5 rounded-full blur-[80px] pointer-events-none" />
+      <p className="text-4xl mb-4">🔍</p>
+      <h1 className="font-display font-bold text-xl text-white mb-2">{t.shopNotFound || 'Shop Not Found'}</h1>
+      <p className="text-muted text-xs mb-6 max-w-xs leading-relaxed">{t.shopNotFoundSub || 'The menu you are looking for does not exist or has been disabled.'}</p>
+      <Link href="/" className="btn-ghost text-xs px-4 py-2 rounded-xl no-underline">{t.createMenu || 'Create Your Menu'}</Link>
     </div>
   );
 
@@ -221,95 +224,103 @@ export default function CustomerMenuPage({ params }: PageProps) {
   if (customFont === 'Syne') customFont = 'Plus Jakarta Sans';
 
   return (
-    <div className="min-h-screen bg-[#0d1a12] pb-24" style={{ fontFamily: customFont }}>
-      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 py-3 bg-[rgba(13,26,18,0.96)] backdrop-blur-xl border-b border-accent/15">
+    <div className="min-h-screen bg-bg text-[#f0f0f5] pb-24 relative overflow-hidden" style={{ fontFamily: customFont }}>
+      {/* Background Radial Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" style={{ backgroundColor: `${primaryColor}08` }} />
+      <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-2.5 py-2 sm:px-4 sm:py-3 bg-bg/80 backdrop-blur-md border-b border-border/40">
         <div className="min-w-0 flex-1">
-          <p className="font-display font-black text-accent text-sm md:text-base leading-tight truncate flex items-center gap-1.5" style={{ color: primaryColor }}>
-            {owner.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
-              <img src={owner.shop_avatar} className="w-5 h-5 rounded-full object-cover flex-shrink-0" alt="Shop Avatar" />
+          <p className="font-display font-semibold text-white text-xs sm:text-sm leading-tight flex items-center gap-1.5">
+            {owner?.shop_avatar?.startsWith('http') || owner?.shop_avatar?.includes('/') ? (
+              <img src={owner.shop_avatar} className="w-4 h-4 rounded-md object-cover flex-shrink-0" alt="Shop Avatar" />
             ) : (
-              <span>{owner.shop_avatar}</span>
+              <span className="text-sm">{owner?.shop_avatar || '🏪'}</span>
             )}
-            <span>{owner.shop_name}</span>
+            <span className="truncate max-w-[100px] sm:max-w-none">{owner?.shop_name}</span>
           </p>
-          {owner.shop_address && <p className="text-[10px] text-accent/50 truncate">{owner.shop_address}</p>}
+          {owner.shop_address && <p className="text-[9px] sm:text-[10px] text-muted truncate mt-0.5">{owner.shop_address}</p>}
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Language switcher for customer */}
           <LanguageSwitcher mode="customer" variant="pill" primaryColor={primaryColor} />
 
           {owner?.plan === 'business' && (
             <button
               onClick={() => setWaiterModalOpen(true)}
-              className="text-xs bg-gold/10 border border-gold/20 text-gold px-3 py-1.5 rounded-lg hover:bg-gold/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
+              className="text-[9px] sm:text-[11px] font-semibold bg-gold/5 border border-gold/25 text-gold px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:bg-gold/10 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
             >
-              🛎️ {t.callWaiter}
+              🛎️ <span className="hidden xs:inline">{t.callWaiter}</span>
             </button>
           )}
           <button
             onClick={() => setOrdersHistoryOpen(true)}
-            className="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/20 transition-all cursor-pointer flex items-center gap-1 font-sans font-bold"
-            style={{ color: primaryColor, borderColor: `${primaryColor}30` }}
+            className="text-[9px] sm:text-[11px] font-semibold bg-white/5 border border-border text-white px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:border-white/20 active:scale-95 transition-all cursor-pointer flex items-center gap-1 font-sans"
+            style={{ borderColor: `${primaryColor}20`, color: primaryColor }}
           >
-            📋 {t.myOrders}
+            📋 <span className="hidden xs:inline">{t.myOrders}</span>
           </button>
           {cart.isAuthenticated && cart.customer ? (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] text-accent/70 font-sans font-bold hidden sm:inline bg-accent/5 px-2 py-1 rounded border border-accent/10" style={{ color: primaryColor, borderColor: `${primaryColor}20` }}>
-                👤 {cart.customer.mobileNumber}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-[8px] sm:text-[10px] text-muted font-sans font-medium hidden md:inline bg-surface-2 px-1.5 py-0.5 rounded border border-border">
+                {cart.customer.mobileNumber}
               </span>
               <button
                 onClick={() => cart.logout().then(() => router.push(`/menu/${params.slug}/login`))}
-                className="text-[10px] sm:text-xs border border-danger/25 text-danger bg-danger/5 px-2.5 py-1.5 rounded-lg hover:bg-danger/15 transition-all cursor-pointer font-bold font-sans"
+                className="text-[8px] sm:text-[10px] border border-danger/20 text-danger bg-danger/5 px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg hover:bg-danger/10 active:scale-95 transition-all cursor-pointer font-semibold font-sans"
               >
                 {t.logout}
               </button>
             </div>
           ) : (
-            <Link href="/auth/login" className="ml-1 text-xs border border-accent/20 text-accent/70 px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors no-underline flex-shrink-0">{t.ownerLink}</Link>
+            <Link href="/auth/login" className="text-[9px] sm:text-[11px] border border-border text-muted hover:text-white hover:border-white/20 px-1.5 py-0.5 sm:px-2.5 sm:py-1.5 rounded-md sm:rounded-lg transition-all no-underline flex-shrink-0">{t.ownerLink}</Link>
           )}
         </div>
       </nav>
 
       <div className="pt-[56px]">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#0a1f12] to-[#061510] px-4 py-10 md:py-14 text-center">
-          <div className="absolute w-72 h-72 rounded-full bg-accent blur-[90px] opacity-[0.06] -top-24 left-1/2 -translate-x-1/2 pointer-events-none" style={{ backgroundColor: primaryColor }} />
-          <div className="relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mx-auto mb-4 overflow-hidden">
-              {owner.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
+        <div className="relative overflow-hidden border-b border-border/20 bg-surface/30 px-4 py-6 md:py-12 text-center">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(180deg, ${primaryColor}05 0%, transparent 100%)` }} />
+          <div className="relative z-10 max-w-xl mx-auto">
+            {/* Avatar container */}
+            <div className="w-14 h-14 sm:w-20 sm:h-20 bg-surface-2 border border-border rounded-xl sm:rounded-2xl flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-3 shadow-card overflow-hidden">
+              {owner?.shop_avatar?.startsWith('http') || owner?.shop_avatar?.includes('/') ? (
                 <img src={owner.shop_avatar} className="w-full h-full object-cover" alt="Shop Avatar" />
               ) : (
-                <span>{owner.shop_avatar}</span>
+                <span>{owner?.shop_avatar || '🏪'}</span>
               )}
             </div>
-            <h1 className="font-display font-black text-xl md:text-2xl text-accent mb-1 leading-tight" style={{ color: primaryColor }}>{owner.shop_name}</h1>
-            {owner.shop_address && <p className="text-accent/50 text-xs md:text-sm">{owner.shop_address}</p>}
-            <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-full text-xs font-bold mt-3" style={{ color: primaryColor, borderColor: `${primaryColor}30` }}>
+            <h1 className="font-display font-bold text-lg sm:text-2xl text-white mb-0.5 tracking-tight">{owner.shop_name}</h1>
+            {owner.shop_address && (
+              <p className="text-muted text-[10px] sm:text-xs flex items-center justify-center gap-1 mt-0.5">
+                <span>📍</span> {owner.shop_address}
+              </p>
+            )}
+            <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold mt-2" style={{ color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
               {t.openNow}{owner.shop_hours ? ` · ${owner.shop_hours}` : ''}
             </div>
-            {owner.shop_description && <p className="text-accent/40 text-xs mt-3 max-w-xs mx-auto leading-relaxed">{owner.shop_description}</p>}
+            {owner.shop_description && <p className="text-muted text-[10px] sm:text-xs mt-2.5 max-w-xs mx-auto leading-relaxed">{owner.shop_description}</p>}
           </div>
         </div>
 
         {/* Search Box & Diet Filter */}
-        <div className="max-w-xl mx-auto px-4 pt-6 pb-2 space-y-3">
+        <div className="max-w-xl mx-auto px-4 pt-4 pb-2 space-y-3">
+          {/* Search bar */}
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-accent/40 text-sm">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted text-sm">
               🔍
             </span>
             <input
               type="text"
-              placeholder={t.searchPlaceholder}
+              placeholder={t.searchPlaceholder || "Search dishes..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl pl-10 pr-10 py-3 text-xs text-[#f0f0f5] placeholder:text-accent/30 outline-none transition-all"
+              className="w-full bg-surface border border-border focus:border-accent rounded-xl pl-9 pr-9 py-2 text-xs text-[#f0f0f5] placeholder:text-muted/50 outline-none transition-all focus:shadow-glow"
               style={{ caretColor: primaryColor }}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-accent/40 hover:text-accent text-xs bg-transparent border-none cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-white text-xs bg-transparent border-none cursor-pointer"
               >
                 ✕
               </button>
@@ -317,115 +328,141 @@ export default function CustomerMenuPage({ params }: PageProps) {
           </div>
 
           {/* Diet Segmented Control */}
-          <div className="flex bg-white/[0.02] border border-accent/10 rounded-xl p-1 gap-1">
-            <button
-              onClick={() => setDietFilter('all')}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none",
-                dietFilter === 'all'
-                  ? "bg-white/[0.07] text-white"
-                  : "bg-transparent text-accent/40 hover:text-accent/70"
-              )}
-            >
-              {t.allDishes}
-            </button>
-            <button
-              onClick={() => setDietFilter('veg')}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none flex items-center justify-center gap-1",
-                dietFilter === 'veg'
-                  ? "bg-accent/15 text-accent border border-accent/20"
-                  : "bg-transparent text-accent/40 hover:text-accent/70"
-              )}
-              style={dietFilter === 'veg' ? { backgroundColor: `${primaryColor}20`, color: primaryColor, borderColor: `${primaryColor}30` } : {}}
-            >
-              {t.vegOnly}
-            </button>
-            <button
-              onClick={() => setDietFilter('non-veg')}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans border-none flex items-center justify-center gap-1",
-                dietFilter === 'non-veg'
-                  ? "bg-danger/15 text-danger border border-danger/20"
-                  : "bg-transparent text-accent/40 hover:text-accent/70"
-              )}
-            >
-              {t.nonVegOnly}
-            </button>
+          <div className="flex bg-surface border border-border/80 rounded-xl p-1 gap-1">
+            {[
+              { id: 'all', label: t.allDishes || 'All' },
+              { id: 'veg', label: t.vegOnly || 'Veg Only' },
+              { id: 'non-veg', label: t.nonVegOnly || 'Non-Veg Only' }
+            ].map((diet) => {
+              const isActive = dietFilter === diet.id;
+              let style = {};
+              if (isActive) {
+                if (diet.id === 'veg') {
+                  style = { backgroundColor: `${primaryColor}15`, color: primaryColor, borderColor: `${primaryColor}30` };
+                } else if (diet.id === 'non-veg') {
+                  style = { backgroundColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.25)' };
+                } else {
+                  style = { backgroundColor: 'rgba(255,255,255,0.06)', color: '#ffffff' };
+                }
+              }
+              return (
+                <button
+                  key={diet.id}
+                  onClick={() => setDietFilter(diet.id as any)}
+                  className={cn(
+                    "flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer font-sans border flex items-center justify-center gap-1.5",
+                    isActive
+                      ? "shadow-sm border-white/10"
+                      : "bg-transparent border-transparent text-[#8e8ea8] hover:text-white"
+                  )}
+                  style={style}
+                >
+                  {diet.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {categories.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto px-4 py-3 border-b border-accent/10 scrollbar-none">
-            <button onClick={() => setActiveCategory('all')} className={cn('px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer font-sans', activeCategory==='all' ? 'bg-accent/15 border-accent text-accent':'border-accent/20 text-accent/50 hover:bg-accent/5 bg-transparent')} style={activeCategory==='all' ? { backgroundColor: `${primaryColor}20`, borderColor: primaryColor, color: primaryColor } : {}}>🍽️ All</button>
+        {categories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto px-4 py-3.5 scrollbar-none max-w-xl mx-auto">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={cn(
+                'px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 cursor-pointer font-sans',
+                activeCategory === 'all'
+                  ? 'border-accent'
+                  : 'border-border/60 text-[#8e8ea8] hover:text-white hover:bg-white/5 bg-transparent'
+              )}
+              style={activeCategory === 'all' ? { backgroundColor: `${primaryColor}15`, borderColor: primaryColor, color: primaryColor } : {}}
+            >
+              🍽️ All
+            </button>
             {categories.map((cat) => (
-              <button key={cat} onClick={() => setActiveCategory(cat)} className={cn('px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer font-sans', activeCategory===cat ? 'bg-accent/15 border-accent text-accent':'border-accent/20 text-accent/50 hover:bg-accent/5 bg-transparent')} style={activeCategory===cat ? { backgroundColor: `${primaryColor}20`, borderColor: primaryColor, color: primaryColor } : {}}>
-                {CAT_ICONS[cat]??'📦'} {cat}
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  'px-4 py-2 rounded-full border text-xs font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0 cursor-pointer font-sans',
+                  activeCategory === cat
+                    ? 'border-accent'
+                    : 'border-border/60 text-[#8e8ea8] hover:text-white hover:bg-white/5 bg-transparent'
+                )}
+                style={activeCategory === cat ? { backgroundColor: `${primaryColor}15`, borderColor: primaryColor, color: primaryColor } : {}}
+              >
+                {CAT_ICONS[cat] ?? '📦'} {cat}
               </button>
             ))}
           </div>
         )}
 
-        <div className="max-w-xl mx-auto px-4 pt-3 pb-1">
-          <p className="text-accent/30 text-xs">{filtered.length} {filtered.length !== 1 ? t.items : t.item}</p>
+        <div className="max-w-xl mx-auto px-4 pt-4 pb-1">
+          <p className="text-muted text-xs">{filtered.length} {filtered.length !== 1 ? t.items : t.item}</p>
         </div>
 
         <div className="max-w-xl mx-auto px-4 py-3 space-y-3">
           {filtered.length === 0 ? (
-            <div className="text-center py-16 text-accent/30"><p className="text-4xl mb-3">🍽️</p><p className="text-sm">{t.noItems}</p></div>
-          ) : filtered.map((item) => (
-            <div key={item.id} className="flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-accent/10 rounded-2xl p-3.5 md:p-4 hover:border-accent/25 hover:bg-accent/[0.04] transition-all">
-              {item.image_url ? (
-                <img src={item.image_url} alt={item.name} className="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0 border border-accent/10" />
-              ) : (
-                <div className="w-14 h-14 md:w-16 md:h-16 bg-accent/8 rounded-xl flex items-center justify-center text-2xl md:text-3xl flex-shrink-0 border border-accent/10">{item.emoji}</div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span 
-                    className="w-3.5 h-3.5 border flex items-center justify-center flex-shrink-0" 
-                    style={{ 
-                      borderColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335',
-                      padding: '1px'
-                    }}
-                    title={(item as any).is_veg !== false ? 'Veg' : 'Non-Veg'}
-                  >
-                    <span 
-                      className="w-1.5 h-1.5 rounded-full" 
-                      style={{ 
-                        backgroundColor: (item as any).is_veg !== false ? '#00e5a0' : '#ea4335' 
-                      }} 
-                    />
-                  </span>
-                  <h3 className="font-bold text-[#f0f0f5] text-sm md:text-base leading-snug truncate">{item.name}</h3>
-                </div>
-                {item.description && <p className="text-white/35 text-xs mt-0.5 line-clamp-2 leading-relaxed">{item.description}</p>}
-                <p className="text-accent/40 text-[10px] mt-1">{item.category}</p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="font-display font-black text-accent text-lg md:text-xl flex-shrink-0" style={{ color: primaryColor }}>₹{item.price}</div>
-                <button
-                  onClick={() => {
-                    cart.addItem({ id: item.id, name: item.name, price: Number(item.price), emoji: item.emoji });
-                    toast.success(`${item.name} added to cart! 🛒`);
-                  }}
-                  className="bg-accent/10 border border-accent/20 hover:bg-accent text-accent hover:text-bg text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer"
-                  style={{ borderColor: `${primaryColor}30`, color: primaryColor }}
-                >
-                  {t.addToCart}
-                </button>
-              </div>
+            <div className="text-center py-16 text-muted/40">
+              <p className="text-4xl mb-3">🍽️</p>
+              <p className="text-sm">{t.noItems}</p>
             </div>
-          ))}
+          ) : filtered.map((item) => {
+            const { label, dotColor, cleanDescription } = parseMenuItemDiet(item);
+            return (
+              <div key={item.id} className="flex items-center gap-2.5 sm:gap-4 bg-surface/40 border border-border/60 rounded-xl p-2.5 sm:p-4 hover:border-border hover:bg-surface transition-all duration-300">
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover flex-shrink-0 border border-border/50" />
+                ) : (
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-surface-2 rounded-lg flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 border border-border/50">{item.emoji}</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span
+                      className="w-3 h-3 border flex items-center justify-center flex-shrink-0 rounded-[3px]"
+                      style={{
+                        borderColor: dotColor,
+                        opacity: 0.8,
+                        padding: '2px',
+                      }}
+                      title={label}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{
+                          backgroundColor: dotColor
+                        }}
+                      />
+                    </span>
+                    <h3 className="font-bold text-[#f0f0f5] text-xs sm:text-sm leading-snug truncate">{item.name}</h3>
+                  </div>
+                  {cleanDescription && <p className="text-muted text-[10px] sm:text-xs mt-0.5 line-clamp-1 sm:line-clamp-2 leading-relaxed">{cleanDescription}</p>}
+                  <p className="text-muted/50 text-[9px] sm:text-[10px] mt-0.5">{item.category}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 sm:gap-2.5 flex-shrink-0">
+                  <div className="font-display font-semibold text-[#f0f0f5] text-xs sm:text-sm flex-shrink-0" style={{ color: primaryColor }}>₹{item.price}</div>
+                  <button
+                    onClick={() => {
+                      cart.addItem({ id: item.id, name: item.name, price: Number(item.price), emoji: item.emoji });
+                      toast.success(`${item.name} added! 🛒`);
+                    }}
+                    className="btn-primary py-1 px-2 sm:py-1.5 sm:px-3 rounded-lg text-[10px] sm:text-xs font-semibold select-none flex items-center justify-center active:scale-[0.96] transition-all cursor-pointer min-w-[50px] text-center"
+                    style={{ backgroundColor: primaryColor, color: '#09090b' }}
+                  >
+                    {t.addToCart || 'Add'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {owner.plan === 'business' ? (
-          <div className="text-center py-8 px-4 border-t border-accent/10">
-            <p className="text-accent/30 text-xs">{owner.shop_name} © {new Date().getFullYear()}</p>
+          <div className="text-center py-10 px-4 border-t border-border/20 max-w-xl mx-auto">
+            <p className="text-muted/50 text-[11px]">{owner.shop_name} © {new Date().getFullYear()}</p>
           </div>
         ) : (
-          <div className="text-center py-8 px-4 border-t border-accent/10">
-            <p className="text-accent/25 text-xs">{t.poweredBy} <Link href="/" className="text-accent font-bold hover:underline">QR-Menu</Link> · <Link href="/" className="text-accent hover:underline">{t.createFree}</Link></p>
+          <div className="text-center py-10 px-4 border-t border-border/20 max-w-xl mx-auto">
+            <p className="text-muted/50 text-[11px]">{t.poweredBy} <Link href="/" className="text-accent font-bold hover:underline no-underline">QR-Menu</Link> · <Link href="/" className="text-accent hover:underline no-underline">{t.createFree}</Link></p>
           </div>
         )}
       </div>
@@ -434,11 +471,11 @@ export default function CustomerMenuPage({ params }: PageProps) {
       {cart.items.length > 0 && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent hover:bg-accent/90 text-bg font-black px-6 py-3.5 rounded-full shadow-[0_4px_25px_rgba(0,229,160,0.3)] flex items-center gap-3 transition-transform hover:scale-105 cursor-pointer border-none z-50 text-sm"
-          style={{ backgroundColor: primaryColor }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 hover:scale-105 active:scale-95 text-bg font-bold px-6 py-3.5 rounded-full shadow-glow flex items-center gap-3 transition-all cursor-pointer border-none z-50 text-sm"
+          style={{ backgroundColor: primaryColor, color: '#09090b' }}
         >
           <span>🛒 {t.viewCart}</span>
-          <span className="bg-bg text-accent text-xs font-black w-5 h-5 rounded-full flex items-center justify-center" style={{ color: primaryColor }}>
+          <span className="bg-bg text-accent text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ color: primaryColor, backgroundColor: '#09090b' }}>
             {cart.items.reduce((acc, i) => acc + i.quantity, 0)}
           </span>
         </button>
@@ -463,61 +500,59 @@ export default function CustomerMenuPage({ params }: PageProps) {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOrdersHistoryOpen(false)} />
 
           {/* Drawer Panel */}
-          <div className="relative w-full max-w-md bg-[#0d1a12] border-l border-accent/10 h-full flex flex-col z-10 animate-fade-up" style={{ fontFamily: customFont }}>
+          <div className="relative w-full max-w-md bg-surface border-l border-border h-full flex flex-col z-10 animate-fade-up" style={{ fontFamily: customFont }}>
             {/* Header */}
-            <div className="p-4 border-b border-accent/10 flex items-center justify-between">
+            <div className="p-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📋</span>
-                <h2 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>{t.myOrders}</h2>
+                <h2 className="font-display font-bold text-lg text-white">{t.myOrders}</h2>
                 <span className="bg-accent/15 text-accent text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: primaryColor, backgroundColor: `${primaryColor}15` }}>
                   {customerOrders.length}
                 </span>
               </div>
-              <button onClick={() => setOrdersHistoryOpen(false)} className="text-accent/50 hover:text-accent transition-colors text-sm font-bold border-none bg-transparent cursor-pointer">✕</button>
+              <button onClick={() => setOrdersHistoryOpen(false)} className="text-muted hover:text-white transition-colors text-sm font-bold border-none bg-transparent cursor-pointer">✕</button>
             </div>
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {customerOrders.length === 0 ? (
-                <div className="text-center py-20 text-accent/30">
+                <div className="text-center py-20 text-muted/40">
                   <span className="text-4xl block mb-2">🍽️</span>
                   <p className="text-sm">{t.noOrdersYet}</p>
-                  <p className="text-[10px] text-accent/20 mt-1">{t.noOrdersHint}</p>
+                  <p className="text-[10px] text-muted/30 mt-1">{t.noOrdersHint}</p>
                 </div>
               ) : (
                 customerOrders.map((order: any) => (
-                  <div key={order.id} className="bg-white/[0.02] border border-accent/10 p-4 rounded-xl space-y-3">
+                  <div key={order.id} className="bg-surface-2 border border-border p-4 rounded-xl space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="font-mono font-bold text-xs text-accent" style={{ color: primaryColor }}>
+                      <span className="font-mono font-bold text-xs text-white">
                         {order.id.includes('-') && order.id.length > 15 ? `#${order.id.split('-')[0]}` : order.id}
                       </span>
-                      <span className="bg-accent-2/10 text-accent-2 text-[10px] font-bold px-2 py-0.5 rounded-full">{order.table}</span>
+                      <span className="bg-white/5 text-[#f0f0f5] border border-border text-[10px] font-bold px-2 py-0.5 rounded-full">{order.table}</span>
                     </div>
 
                     <div className="text-xs text-[#f0f0f5] font-medium leading-relaxed">
                       {order.items}
                     </div>
 
-                    <div className="flex justify-between items-center pt-2 border-t border-accent/10 text-xs">
+                    <div className="flex justify-between items-center pt-2 border-t border-border text-xs">
                       <div>
-                        <div className="text-accent/40 text-[9px]">{order.date}</div>
-                        <div className="font-black text-sm text-[#f0f0f5] mt-0.5">₹{order.total}</div>
+                        <div className="text-muted text-[9px]">{order.date}</div>
+                        <div className="font-bold text-sm text-[#f0f0f5] mt-0.5">₹{order.total}</div>
                       </div>
                       <div className="flex gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${
-                          order.paymentStatus === 'paid'
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${order.paymentStatus === 'paid'
                             ? 'bg-accent/10 text-accent border-accent/20'
                             : 'bg-gold/10 text-gold border-gold/20'
-                        }`} style={order.paymentStatus === 'paid' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
+                          }`} style={order.paymentStatus === 'paid' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
                           {order.paymentStatus === 'paid' ? t.paid : t.unpaid}
                         </span>
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${
-                          order.status === 'completed'
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold capitalize border ${order.status === 'completed'
                             ? 'bg-accent/10 text-accent border-accent/20'
                             : order.status === 'cancelled'
-                            ? 'bg-danger/10 text-danger border-danger/20'
-                            : 'bg-gold/10 text-gold border-gold/20'
-                        }`} style={order.status === 'completed' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
+                              ? 'bg-danger/10 text-danger border-danger/20'
+                              : 'bg-gold/10 text-gold border-gold/20'
+                          }`} style={order.status === 'completed' ? { color: primaryColor, borderColor: `${primaryColor}20`, backgroundColor: `${primaryColor}10` } : {}}>
                           {order.status}
                         </span>
                       </div>
@@ -537,18 +572,18 @@ export default function CustomerMenuPage({ params }: PageProps) {
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setWaiterModalOpen(false)} />
 
           {/* Modal Content */}
-          <div className="relative w-full max-w-sm bg-[#0d1a12] border border-accent/15 rounded-2xl p-6 z-10 shadow-2xl animate-fade-up" style={{ fontFamily: customFont }}>
+          <div className="relative w-full max-w-sm bg-surface border border-border rounded-2xl p-6 z-10 shadow-2xl animate-fade-up" style={{ fontFamily: customFont }}>
             <button
               onClick={() => setWaiterModalOpen(false)}
-              className="absolute top-4 right-4 text-accent/50 hover:text-accent font-bold border-none bg-transparent cursor-pointer text-sm"
+              className="absolute top-4 right-4 text-muted hover:text-white font-bold border-none bg-transparent cursor-pointer text-sm"
             >
               ✕
             </button>
 
             <div className="text-center space-y-4">
               <span className="text-4xl block animate-bounce">🛎️</span>
-              <h3 className="font-display font-black text-lg text-accent" style={{ color: primaryColor }}>{t.callWaiterTitle}</h3>
-              <p className="text-xs text-accent/60 leading-relaxed">
+              <h3 className="font-display font-bold text-lg text-white">{t.callWaiterTitle}</h3>
+              <p className="text-xs text-muted leading-relaxed">
                 {t.callWaiterDesc}
               </p>
 
@@ -558,7 +593,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                   placeholder={t.tablePlaceholder}
                   value={tableInput}
                   onChange={(e) => setTableInput(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-accent/10 focus:border-accent rounded-xl px-4 py-3 text-center font-bold text-sm text-[#f0f0f5] placeholder:text-accent/20 outline-none transition-all"
+                  className="w-full bg-surface-2 border border-border focus:border-accent rounded-xl px-4 py-3 text-center font-bold text-sm text-[#f0f0f5] placeholder:text-muted/30 outline-none transition-all"
                   style={{ caretColor: primaryColor }}
                 />
 
@@ -566,7 +601,7 @@ export default function CustomerMenuPage({ params }: PageProps) {
                   <button
                     type="button"
                     onClick={() => setWaiterModalOpen(false)}
-                    className="flex-1 bg-transparent hover:bg-white/[0.03] border border-accent/10 hover:border-accent/30 text-accent/70 hover:text-accent font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
+                    className="flex-1 bg-transparent hover:bg-white/[0.03] border border-border text-muted hover:text-white font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
                   >
                     {t.cancel}
                   </button>
@@ -574,8 +609,8 @@ export default function CustomerMenuPage({ params }: PageProps) {
                     type="button"
                     onClick={handleCallWaiter}
                     disabled={waiterCallLoading}
-                    className="flex-1 font-bold py-2.5 rounded-xl text-xs text-bg hover:opacity-90 transition-all cursor-pointer border-none"
-                    style={{ backgroundColor: primaryColor }}
+                    className="flex-1 font-bold py-2.5 rounded-xl text-xs hover:opacity-90 active:scale-95 transition-all cursor-pointer border-none"
+                    style={{ backgroundColor: primaryColor, color: '#09090b' }}
                   >
                     {waiterCallLoading ? t.calling : t.callNow}
                   </button>

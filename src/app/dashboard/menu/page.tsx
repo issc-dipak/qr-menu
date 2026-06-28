@@ -33,13 +33,13 @@ export default function MenuPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight">{t.menuPageTitle}</h1>
-          <p className="text-muted text-sm mt-1">{totalItems} {t.menuPageSubtitle}</p>
+          <h1 className="font-display font-bold text-xl sm:text-2xl md:text-3xl text-white tracking-tight leading-tight">{t.menuPageTitle}</h1>
+          <p className="text-muted text-xs sm:text-sm mt-0.5">{totalItems} {t.menuPageSubtitle}</p>
         </div>
         <Button size="sm" onClick={openAdd} leftIcon={<Plus className="w-4 h-4" />}>
-          {t.addItem}
+          <span className="hidden xs:inline">{t.addItem}</span>
         </Button>
       </div>
 
@@ -80,17 +80,6 @@ export default function MenuPage() {
         {items.map((item) => (
           <MenuItemCard key={item.id} item={item} onEdit={openEdit} onDelete={handleDelete} />
         ))}
-
-        {/* Add Card */}
-        <button
-          onClick={openAdd}
-          className="bg-surface border-2 border-dashed border-border rounded-card flex flex-col items-center justify-center gap-3 min-h-[250px] cursor-pointer hover:border-accent/40 hover:bg-accent/[0.02] transition-all duration-300"
-        >
-          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-            <Plus className="w-5 h-5" />
-          </div>
-          <span className="text-sm text-muted font-medium">Add New Item</span>
-        </button>
       </div>
 
       {/* Empty */}

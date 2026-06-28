@@ -129,7 +129,7 @@ export function PhoneMockup({ shopName = 'Dipak Chai Corner', themeColor = '#00e
         {/* Scrollable Items List */}
         <div 
           ref={listRef}
-          className="flex-1 overflow-y-auto px-3 py-2 space-y-2 pb-16 scrollbar-none"
+          className="flex-1 overflow-y-auto px-3 py-2 pb-16 divide-y divide-white/10 scrollbar-none"
         >
           {MENU_ITEMS.map((item, idx) => {
             const isActive = idx === currentIndex;
@@ -140,34 +140,24 @@ export function PhoneMockup({ shopName = 'Dipak Chai Corner', themeColor = '#00e
                 key={item.id}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
-                  "flex items-center gap-2.5 border rounded-xl p-2.5 transition-all duration-300 cursor-pointer relative overflow-hidden",
-                  isActive
-                    ? "bg-white/[0.04] scale-[1.02]"
-                    : "bg-surface-2/30 border-border/40 hover:bg-surface-2/50"
+                  "flex items-start justify-between gap-3 py-3 transition-all duration-300 cursor-pointer relative -mx-1 px-1 rounded-lg",
+                  isActive && "bg-white/[0.04] scale-[1.01]"
                 )}
-                style={isActive ? { borderColor: `${themeColor}60`, boxShadow: `0 0 12px ${themeColor}15` } : {}}
+                style={isActive ? { boxShadow: `inset 0 0 0 1px ${themeColor}15` } : {}}
               >
                 {/* Glow bar for active item */}
                 {isActive && (
                   <div 
-                    className="absolute left-0 top-0 bottom-0 w-[3px] animate-pulse" 
+                    className="absolute left-0 top-1 bottom-1 w-[2.5px] rounded-r animate-pulse" 
                     style={{ backgroundColor: themeColor }}
                   />
                 )}
 
-                {/* Item Emoji Container */}
-                <div 
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-colors duration-305"
-                  style={isActive ? { backgroundColor: `${themeColor}20`, borderColor: `${themeColor}40`, borderWidth: '1px' } : { backgroundColor: '#162b1e', borderColor: '#223c2a', borderWidth: '1px' }}
-                >
-                  {item.emoji}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
+                {/* Left side: Info */}
+                <div className="flex-1 min-w-0 pr-1.5 text-left">
+                  <div className="flex items-center gap-1 mb-0.5">
                     {item.isVeg && (
-                      <span className="w-2.5 h-2.5 border border-emerald-500 flex items-center justify-center p-[1px] flex-shrink-0">
+                      <span className="w-2.5 h-2.5 border border-emerald-500 flex items-center justify-center p-[1.5px] flex-shrink-0 rounded-[2px]">
                         <span className="w-1 h-1 rounded-full bg-emerald-500" />
                       </span>
                     )}
@@ -178,37 +168,49 @@ export function PhoneMockup({ shopName = 'Dipak Chai Corner', themeColor = '#00e
                       {item.name}
                     </p>
                   </div>
-                  <p className="text-muted text-[8px] md:text-[9px] truncate mt-0.5">
+                  <p className="text-white/40 text-[8px] md:text-[9px] mt-0.5 leading-normal line-clamp-2">
                     {item.description}
                   </p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span className="font-semibold text-white text-[9px] md:text-[10px]">
+                      ₹{item.price}
+                    </span>
+                    <span className="text-white/20 text-[8px]">·</span>
+                    <span className="text-white/40 text-[8px] font-medium">
+                      {item.category}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Price & Add button */}
-                <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
-                  <p 
-                    className="text-[10px] md:text-xs font-black transition-colors duration-300"
-                    style={isActive ? { color: themeColor } : { color: 'white' }}
+                {/* Right side: Image & Floating Add Button */}
+                <div className="relative flex-shrink-0 flex flex-col items-center">
+                  <div 
+                    className="w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center text-xl md:text-2xl flex-shrink-0 transition-all duration-300 border"
+                    style={isActive 
+                      ? { backgroundColor: `${themeColor}12`, borderColor: `${themeColor}30` } 
+                      : { backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }
+                    }
                   >
-                    ₹{item.price}
-                  </p>
+                    {item.emoji}
+                  </div>
 
-                  {/* Simulated Add Button */}
-                  <div className="h-5 flex items-center justify-end">
+                  {/* Simulated Floating Add Button */}
+                  <div className="absolute -bottom-1.5 flex items-center justify-center">
                     {quantity > 0 ? (
                       <div 
-                        className="flex items-center gap-1.5 text-black rounded px-1 text-[9px] font-black animate-fade-in"
+                        className="flex items-center gap-1 text-black rounded px-1.5 py-0.5 text-[8px] font-black animate-fade-in shadow-sm border border-black/10 select-none"
                         style={{ backgroundColor: themeColor }}
                       >
                         <span>-</span>
-                        <span className="text-[10px]">{quantity}</span>
-                        <span className={cn(isActive && "scale-125 transition-transform duration-200")}>+</span>
+                        <span className="text-[9px]">{quantity}</span>
+                        <span className={cn(isActive && "scale-110 transition-transform duration-200")}>+</span>
                       </div>
                     ) : (
                       <button 
-                        className="text-[8px] font-bold px-2 py-0.5 rounded border transition-all duration-300"
+                        className="text-[8px] font-bold px-2 py-0.5 rounded shadow-sm border transition-all duration-300 select-none"
                         style={isActive 
-                          ? { backgroundColor: themeColor, borderColor: themeColor, color: '#000000', fontWeight: '900', transform: 'scale(1.05)' } 
-                          : { borderColor: `${themeColor}40`, color: themeColor, backgroundColor: `${themeColor}05` }
+                          ? { backgroundColor: themeColor, borderColor: themeColor, color: '#000000', fontWeight: '900', transform: 'scale(1.03)' } 
+                          : { borderColor: `${themeColor}30`, color: themeColor, backgroundColor: `${themeColor}05` }
                         }
                       >
                         + ADD
