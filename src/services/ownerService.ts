@@ -65,3 +65,21 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
 
   return !data;
 }
+
+// ─── UPLOAD SHOP AVATAR IMAGE ─────────────────────────────────
+export async function uploadShopAvatar(
+  ownerId: string,
+  file: File
+): Promise<string> {
+  const ext  = file.name.split('.').pop();
+  const path = `${ownerId}/avatar_${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('menu-images')
+    .upload(path, file, { upsert: true });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage.from('menu-images').getPublicUrl(path);
+  return data.publicUrl;
+}

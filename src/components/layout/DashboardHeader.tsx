@@ -26,8 +26,13 @@ export function DashboardHeader() {
 
       <div className="flex items-center gap-2">
         {owner?.shop_name && (
-          <span className="text-xs text-muted font-medium hidden md:block truncate max-w-[160px]">
-            {owner?.shop_avatar} {owner?.shop_name}
+          <span className="text-xs text-muted font-medium hidden md:block truncate max-w-[160px] flex items-center gap-1.5">
+            {owner?.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
+              <img src={owner.shop_avatar} className="w-5 h-5 rounded-full object-cover flex-shrink-0" alt="Shop Avatar" />
+            ) : (
+              <span>{owner?.shop_avatar}</span>
+            )}
+            <span>{owner?.shop_name}</span>
           </span>
         )}
         <Link href={owner?.shop_slug ? `/menu/${owner.shop_slug}` : '#'} target="_blank" className="btn-ghost text-xs px-3 py-1.5 rounded-lg no-underline flex items-center gap-1.5">

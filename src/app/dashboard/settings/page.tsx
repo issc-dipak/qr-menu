@@ -9,7 +9,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/utils';
 import toast from 'react-hot-toast';
 import type { LangCode } from '@/i18n/translations';
-import { User, Store, Palette, Bell, Globe, AlertTriangle, Settings } from 'lucide-react';
+import { User, Store, Palette, Bell, Globe, AlertTriangle, Settings, Upload } from 'lucide-react';
+import { uploadShopAvatar } from '@/services/ownerService';
 
 type Tab = 'profile' | 'shop' | 'theme' | 'notifications' | 'language' | 'danger';
 
@@ -76,11 +77,46 @@ export default function SettingsPage() {
     }
   }, [owner]);
 
+  const [uploadLoading, setUploadLoading] = useState(false);
+
   const handleSelectEmoji = async (emoji: string) => {
     setIsEmojiModalOpen(false);
     const success = await updateOwner({ shop_avatar: emoji });
     if (success) {
       toast.success('Shop avatar updated!');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!owner) {
+      toast.error('No owner session found');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size must be under 2MB');
+      return;
+    }
+
+    setUploadLoading(true);
+    const toastId = toast.loading('Uploading logo...');
+    try {
+      const publicUrl = await uploadShopAvatar(owner.id, file);
+      const success = await updateOwner({ shop_avatar: publicUrl });
+      if (success) {
+        toast.success('Custom photo uploaded successfully!', { id: toastId });
+        setIsEmojiModalOpen(false);
+      } else {
+        throw new Error('Store update failed');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Failed to upload photo', { id: toastId });
+    } finally {
+      setUploadLoading(false);
     }
   };
 
@@ -142,8 +178,12 @@ export default function SettingsPage() {
               <p className="text-muted text-xs mb-5">{t.profileSubtitle}</p>
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 text-white shadow-sm text-2xl">
-                  {owner?.shop_avatar || '🏪'}
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-3 flex items-center justify-center flex-shrink-0 text-white shadow-sm text-2xl overflow-hidden">
+                  {owner?.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
+                    <img src={owner.shop_avatar} className="w-full h-full object-cover" alt="Shop Avatar" />
+                  ) : (
+                    <span>{owner?.shop_avatar || '🏪'}</span>
+                  )}
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setIsEmojiModalOpen(true)}>{t.changePhoto}</Button>
               </div>
@@ -345,10 +385,10 @@ export default function SettingsPage() {
               Select Shop Avatar
             </h3>
             <p className="text-muted text-xs mb-4">
-              This emoji will appear on your customer menu and dashboard header.
+              Choose an emoji or upload a custom photo to display as your shop logo.
             </p>
 
-            <div className="grid grid-cols-5 gap-3 mb-6">
+            <div className="grid grid-cols-5 gap-3 mb-4">
               {SHOP_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
@@ -361,6 +401,25 @@ export default function SettingsPage() {
                   {emoji}
                 </button>
               ))}
+            </div>
+
+            {/* Custom File Upload Option */}
+            <div className="border-t border-border/40 pt-4 mt-4 mb-5">
+              <p className="text-white text-xs font-semibold mb-2">Or upload custom photo/logo</p>
+              <label className={cn(
+                "flex items-center justify-center gap-2 w-full px-4 py-3 bg-surface-2 border border-border border-dashed rounded-xl text-xs hover:border-accent hover:bg-accent/5 transition-all text-center cursor-pointer font-sans text-muted hover:text-white",
+                uploadLoading && "opacity-50 cursor-not-allowed pointer-events-none"
+              )}>
+                <Upload className="w-4 h-4 text-accent" />
+                <span>{uploadLoading ? "Uploading..." : "Upload Logo (PNG/JPG)"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadLoading}
+                />
+              </label>
             </div>
 
             <div className="flex justify-end">

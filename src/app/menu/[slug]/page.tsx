@@ -224,7 +224,14 @@ export default function CustomerMenuPage({ params }: PageProps) {
     <div className="min-h-screen bg-[#0d1a12] pb-24" style={{ fontFamily: customFont }}>
       <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 py-3 bg-[rgba(13,26,18,0.96)] backdrop-blur-xl border-b border-accent/15">
         <div className="min-w-0 flex-1">
-          <p className="font-display font-black text-accent text-sm md:text-base leading-tight truncate" style={{ color: primaryColor }}>{owner.shop_avatar} {owner.shop_name}</p>
+          <p className="font-display font-black text-accent text-sm md:text-base leading-tight truncate flex items-center gap-1.5" style={{ color: primaryColor }}>
+            {owner.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
+              <img src={owner.shop_avatar} className="w-5 h-5 rounded-full object-cover flex-shrink-0" alt="Shop Avatar" />
+            ) : (
+              <span>{owner.shop_avatar}</span>
+            )}
+            <span>{owner.shop_name}</span>
+          </p>
           {owner.shop_address && <p className="text-[10px] text-accent/50 truncate">{owner.shop_address}</p>}
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -268,7 +275,13 @@ export default function CustomerMenuPage({ params }: PageProps) {
         <div className="relative overflow-hidden bg-gradient-to-br from-[#0a1f12] to-[#061510] px-4 py-10 md:py-14 text-center">
           <div className="absolute w-72 h-72 rounded-full bg-accent blur-[90px] opacity-[0.06] -top-24 left-1/2 -translate-x-1/2 pointer-events-none" style={{ backgroundColor: primaryColor }} />
           <div className="relative z-10">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mx-auto mb-4">{owner.shop_avatar}</div>
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mx-auto mb-4 overflow-hidden">
+              {owner.shop_avatar && (owner.shop_avatar.startsWith('http') || owner.shop_avatar.includes('/')) ? (
+                <img src={owner.shop_avatar} className="w-full h-full object-cover" alt="Shop Avatar" />
+              ) : (
+                <span>{owner.shop_avatar}</span>
+              )}
+            </div>
             <h1 className="font-display font-black text-xl md:text-2xl text-accent mb-1 leading-tight" style={{ color: primaryColor }}>{owner.shop_name}</h1>
             {owner.shop_address && <p className="text-accent/50 text-xs md:text-sm">{owner.shop_address}</p>}
             <div className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-full text-xs font-bold mt-3" style={{ color: primaryColor, borderColor: `${primaryColor}30` }}>
